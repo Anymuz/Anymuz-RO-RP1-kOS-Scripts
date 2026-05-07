@@ -2,7 +2,7 @@
 
 ![Cosmic Fleet flag](docs/images/flag.png)
 
-This document is a general reference for the fictional in-game space agency called the "Cosmic Fleet". It contains the software that pilots and ssupports all missions based on which vessel is loaded into the system.
+This document is a general reference for the fictional in-game space agency called the "Cosmic Fleet". It contains the software that pilots and supports all missions based on which vessel is loaded into the system.
 
 **Contributions:** This repository is for the systems built during my  time playing this game, you are free  to copy the design approach and reuse scripts in your own gameplay but no PRs or issues please, use this work as reference for your own creative approach for best satisfaction, where varients of this sytem are made for you own kOS repos, if you stick with the design approach and script flow foundations layed out here then credit is aprechiated. Ships will not be shared here, please if using these scripts do so with your own designs and playstyle.
 
