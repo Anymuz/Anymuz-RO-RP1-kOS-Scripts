@@ -1,0 +1,15 @@
+# Ignore AI tooling and editor scaffolding from the published repo.
+.github/
+**/.instructions.md
+.vscode/
+
+# Ignore my personal flight logs but keep the folder so the path exists on clone.
+logs/*
+!logs/.gitkeep
+
+# Personal copies
+system/failureInfo-anymuz.ks
+
+# Misc
+Thumbs.db
+*.bak
