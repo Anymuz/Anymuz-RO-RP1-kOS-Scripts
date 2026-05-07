@@ -14,6 +14,9 @@ KerboScript scripts for the [kOS](https://ksp-kos.github.io/KOS/) mod, written f
 
 This is a personal project that grows mission by mission. Layout and conventions are stable, but ships, programs, and tunings are added or changed as new vehicles are designed and flown. Scripts are tested in the in-game simulation feature before being used on career flights.
 
+## Usage
+These scripts are largely dependent on my ship designs but if you want to make a copy to adapt to your own but reuse and adapt libraries or the boot flow be sure to directly clone the contents of this repo to your ``[KSP Directory]\Ships\Script`` folder then use boot.ks on your ships kOS boot file setting in-game.
+
 ## Volume layout
 
 All paths below are relative to the kOS archive volume `0:/`.
