@@ -4,12 +4,12 @@ DECLARE FUNCTION armBoosterSeperation {
     DECLARE PARAMETER preigniteMainFuel IS 3.
     DECLARE PARAMETER boosterShutdownFuel IS 0.2.
 
-    LOCAL boosterSeparationLevel is boosterShutdownFuel*2. // Fuel level to trigger booster separation, prevents dry separation which causes instability.
+    LOCAL boosterSeparation IS FALSE.
+    LOCAL totalBoosters IS SHIP:PARTSTAGGED(boosterTag):LENGTH.
+    LOCAL boosterSeparationLevel IS boosterShutdownFuel * 1.5. // 1.5x shutdown to prevent dry separation instability.
     SET flightData["phase"] TO "booster".
     WAIT 0.5.
 
-    LOCAL boosterSeparation IS FALSE.
-    LOCAL totalBoosters IS SHIP:PARTSTAGGED(boosterTag):LENGTH.
     LOCAL ignitedCount IS countBoosterIgnitions(boosterTag).
     logMessage("Booster ignition: " + ignitedCount + "/" + totalBoosters + " ignited.", "info", TRUE, FALSE, TRUE).
 

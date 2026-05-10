@@ -1,7 +1,6 @@
 // 0:/lib/downrange.ks
-// Bmidbar-compatible downrange guidance.
-// Uses early kick-turn guidance instead of slow altitude-only pitch-over.
 
+// Uses early kick-turn guidance instead of slow altitude-only pitch-over.
 DECLARE FUNCTION clampValue {
     DECLARE PARAMETER value.
     DECLARE PARAMETER minValue.
@@ -18,7 +17,7 @@ DECLARE FUNCTION clampValue {
     RETURN value.
 }.
 
-
+// Calculates target pitch based on altitude and defined turn profile.
 DECLARE FUNCTION calculateDownrangePitch {
     DECLARE PARAMETER turnStartAlt IS 0.
     DECLARE PARAMETER kickEndAlt IS 300.
@@ -65,7 +64,7 @@ DECLARE FUNCTION calculateDownrangePitch {
     RETURN clampValue(targetPitch, finalPitch, 90).
 }.
 
-
+// Logs the defined downrange guidance profile parameters.
 DECLARE FUNCTION logDownrangeProfile {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -77,6 +76,7 @@ DECLARE FUNCTION logDownrangeProfile {
     DECLARE PARAMETER guidanceEndAlt IS 90000.
     DECLARE PARAMETER lockProgradeAfterGuidance IS TRUE.
 
+    CLEARSCREEN.
     logMessage("Downrange guidance profile loaded.", "guidance", TRUE, FALSE, TRUE).
     logMessage("Launch azimuth: " + launchAzimuth + " degrees.", "guidance", TRUE, FALSE, TRUE).
     logMessage("Turn start altitude: " + turnStartAlt + "m.", "guidance", TRUE, FALSE, TRUE).
@@ -89,7 +89,7 @@ DECLARE FUNCTION logDownrangeProfile {
     logMessage("Prograde hold after guidance: " + lockProgradeAfterGuidance + ".", "guidance", TRUE, FALSE, TRUE).
 }.
 
-
+//` Arms the downrange guidance profile, applying calculated pitch targets and logging progress.
 DECLARE FUNCTION armDownrangeGuidance {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -131,11 +131,13 @@ DECLARE FUNCTION armDownrangeGuidance {
                 finalPitch,
                 turnShape
             ).
-            PRINT "                                                                                                                                      " AT (0,0).
-            PRINT "======================================================" AT(0,1).
-            PRINT "TARGET PITCH: " + ROUND(targetPitch, 2) + " | ALT: " + ROUND(ALTITUDE, 1) + "     " AT(0,2).
-            PRINT "======================================================" AT(0,3).
-            PRINT "                                                                                                                                      " AT (0,4).
+            WAIT 0.1.
+            CLEARSCREEN.
+            PRINT "                                                                                                                                      " AT (0,10).
+            PRINT "======================================================" AT(0,11).
+            PRINT "TARGET PITCH: " + ROUND(targetPitch, 2) + " | ALT: " + ROUND(ALTITUDE, 1) + "     " AT(0,12).
+            PRINT "======================================================" AT(0,13).
+            PRINT "                                                                                                                                      " AT (0,14).
 
             LOCK STEERING TO HEADING(launchAzimuth, targetPitch).
 

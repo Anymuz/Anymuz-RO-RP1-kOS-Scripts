@@ -4,7 +4,7 @@
 DECLARE FUNCTION initializeLaunch {
     logMessage("Launch sequence standby. Press any key to proceed.", "standby", TRUE, FALSE, TRUE).
     TERMINAL:INPUT:GETCHAR().
-    WAIT 0.5.
+    WAIT 0.05.
     CLEARSCREEN.
     logMessage("User input detected", "action", TRUE, FALSE, FALSE).
     logMessage("Launch sequence now commencing.", "alert", TRUE, TRUE, TRUE).
@@ -13,17 +13,20 @@ DECLARE FUNCTION initializeLaunch {
 
 DECLARE FUNCTION countdownLaunch {
     DECLARE PARAMETER seconds IS 10.
-
-    PRINT "                                                                                                                                " AT (0,1).
-    PRINT  "[LAUNCH] COUNTDOWN SET TO: [" + seconds + "s]." AT(0,2).
+    CLEARSCREEN.
+    logMessage("The launch can be aborted by pressing CTRL + C during the countdown.", "INFO", TRUE, FALSE, TRUE).
+    logMessage("Doing this will stop all systems, requireing 'REBOOT.' to be typed to restart.", "INFO", TRUE, FALSE, TRUE).
+    skipLine().
+    PRINT "                                                                                                                                " AT (0,4).
+    PRINT  "[LAUNCH] COUNTDOWN SET TO: [" + seconds + "s]." AT(0,5).
     logMessage("Countdown set to: " + seconds + " seconds. Begining countdown.", "launch", TRUE, FALSE, FALSE).
     logMessage("Playing countdown audio.", "audio", TRUE, FALSE, FALSE).
-    FROM { LOCAL count IS seconds. } UNTIL count < 0 STEP { SET count TO count - 1. } DO {
-        PRINT " " AT(0,3).
-        PRINT "[LAUNCH] T:  -" + count + "s" AT(0,4).
+    FROM { LOCAL count IS 0 - seconds. } UNTIL count = 0 STEP { SET count TO count + 1. } DO {
+        PRINT " " AT(0,6).
+        PRINT "[LAUNCH] T: " + count + "s                                               " AT(0,7).
         playCountdownSound().
         WAIT 1.
-        PRINT "                                                                                                                          " AT(0,4).
+        PRINT "                                                                                                                          " AT(0,8).
     }.
     logMessage("Countdown complete.", "launch", TRUE, FALSE, FALSE).
 }.

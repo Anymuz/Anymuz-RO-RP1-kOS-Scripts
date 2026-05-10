@@ -40,7 +40,7 @@ DECLARE FUNCTION selfDestruct {
     DECLARE PARAMETER reason IS "UNKNOWN".
     DECLARE PARAMETER fuzeTime IS 3. 
 
-    logMessage("Self destruct initiated. Reason: " + reason, "fatal", FALSE, FALSE, FALSE).
+    logMessage("Self destruct initiated | Reason: " + reason + " | Fuze time: " + fuzeTime + "s.", "fatal", FALSE, FALSE, FALSE).
     playDetonationAlarm(fuzeTime).
     WAIT fuzeTime.
     logMessage("Rapid vehicle disassembly has occurred.", "end", FALSE, FALSE, FALSE).
