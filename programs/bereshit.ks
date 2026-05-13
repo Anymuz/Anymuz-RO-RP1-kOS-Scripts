@@ -65,7 +65,7 @@ DECLARE FUNCTION activateTelemetry {
         logMessage("Activating telemetry for Bereshit R2", "system", TRUE, FALSE, TRUE).
         AG1 ON.
         WAIT 0.1.
-        logMessage("Temperature and Pressure sensors with telemetry transmission.", "online", TRUE, FALSE, TRUE).
+        logMessage("Sensors, telemetry and transmission are standby.", "online", TRUE, FALSE, TRUE).
         logMessage("Telemetry data and sensors ready to auto transmit.", "info", TRUE, FALSE, TRUE).
         skipLine().
     } ELSE {
@@ -79,10 +79,10 @@ DECLARE FUNCTION activateTelemetry {
 DECLARE FUNCTION startupMessage {
     DECLARE PARAMETER electricChargeLevel IS 0.
 
-    logMessage("Electrical charge detected, systems are now running on ship power.", "alert", TRUE, TRUE, TRUE).
-    logMessage("Start launch ASAP to avoid excessive EC depletion.", "system", TRUE, FALSE, TRUE).
-    logMessage("On startup this vehicle has: " + electricChargeLevel + "KJ.", "system", TRUE, FALSE, TRUE).
-    logMessage("Manually ensure EC level is sufficient before launch.", "system", TRUE, FALSE, TRUE).
+    logMessage("Electrics are LIVE, systems are now running on internal power.", "alert", TRUE, TRUE, TRUE).
+    // logMessage("Start launch ASAP to avoid excessive EC depletion.", "system", TRUE, FALSE, TRUE). // now Use luach clamp 
+    logMessage("On startup this vehicle has: " +ROUND(electricChargeLevel, 2) + "KJ.", "system", TRUE, FALSE, TRUE).
+    //logMessage("Manually ensure EC level is sufficient before launch.", "system", TRUE, FALSE, TRUE). // Not needed
     skipLine().
     WAIT 0.5.
 }.
@@ -98,8 +98,8 @@ DECLARE FUNCTION initalizeBereshit {
     }.
 
     IF electricChargeLevel <= 0 {
-        logMessage("No electrical charge detected, check connections and battery levels.", "critical", TRUE, FALSE, TRUE).
-        logMessage("Launch is not possible without electrical charge, aborting launch sequence.", "critical", TRUE, TRUE, TRUE).
+        logMessage("No electrical power feed, check connections and battery levels.", "critical", TRUE, FALSE, TRUE).
+        logMessage("Operation impossible without power, possible false positive. Abort.", "critical", TRUE, TRUE, TRUE).
         RETURN.
     } ELSE {
         WAIT 0.2.

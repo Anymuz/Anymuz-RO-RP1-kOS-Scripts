@@ -14,8 +14,8 @@ DECLARE FUNCTION initializeLaunch {
 DECLARE FUNCTION countdownLaunch {
     DECLARE PARAMETER seconds IS 10.
     CLEARSCREEN.
-    logMessage("The launch can be aborted by pressing CTRL + C during the countdown.", "INFO", TRUE, FALSE, TRUE).
-    logMessage("Doing this will stop all systems, requireing 'REBOOT.' to be typed to restart.", "INFO", TRUE, FALSE, TRUE).
+    logMessage("The launch can be aborted safely with CTRL+C.", "INFO", TRUE, FALSE, TRUE).
+    logMessage("Doing so deactivates computer. 'REBOOT.' to restart.", "INFO", TRUE, FALSE, TRUE).
     skipLine().
     PRINT "                                                                                                                                " AT (0,4).
     PRINT  "[LAUNCH] COUNTDOWN SET TO: [" + seconds + "s]." AT(0,5).
