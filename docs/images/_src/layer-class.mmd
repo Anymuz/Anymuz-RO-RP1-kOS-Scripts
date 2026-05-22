@@ -1,0 +1,70 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+classDiagram
+    class Boot {
+        +file boot_ks
+        +waitsForShipUnpacked()
+        +opensTerminal()
+        +runpath_main()
+    }
+    class SystemMain {
+        +file main_ks
+        +shipName
+        +shipSeries
+        +shipVariant
+        +flightData
+        +loadCoreLibs()
+        +runpath_loadShip()
+    }
+    class LoadShip {
+        +file loadShip_ks
+        +setupAudio()
+        +resolveShipFile()
+        +runpath_shipScript()
+        +fallbackFailureInfo()
+    }
+    class ShipScript {
+        +file ships_SERIES_NAME_ks
+        +perVehicleTuning
+        +callInitializeFamily()
+        +runMissionSequence()
+    }
+    class Program {
+        +file programs_FAMILY_ks
+        +familyGlobals
+        +logConfig
+        +initializeFamily()
+    }
+    class Libraries {
+        +launch_ks
+        +tracking_ks
+        +booster_ks
+        +detonation_ks
+        +downrange_ks
+        +logging_ks
+        +utils_ks
+        +audio_ks
+    }
+    class FlightData {
+        +phase
+        +maxVelocity
+        +maxVelocityAlt
+        +apogeeAlt
+        +apogeeVelocity
+        +descentCaptured
+        +maxApoapsis
+        +maxApoapsisAlt
+    }
+    class Logs {
+        +file archive_logs_SHIP_flightlog_txt
+    }
+
+    Boot --> SystemMain : RUNPATH
+    SystemMain --> LoadShip : RUNPATH
+    SystemMain --> FlightData : initializes
+    LoadShip --> ShipScript : RUNPATH by SHIP NAME
+    ShipScript --> Program : RUNONCEPATH
+    Program --> Libraries : RUNONCEPATH
+    ShipScript ..> Libraries : calls helpers
+    Libraries ..> FlightData : read and update
+    Libraries ..> Logs : logMessage
+    Program ..> Logs : logConfig

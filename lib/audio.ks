@@ -95,7 +95,7 @@ DECLARE FUNCTION armAlarmKeyStop {
     IF NOT alarmStopKeyArmed {
         SET alarmStopKeyArmed TO TRUE.
 
-        WHEN TERMINAL:INPUT:HASCHAR THEN {
+        WHEN alarmState["active"] AND TERMINAL:INPUT:HASCHAR THEN {
             LOCAL keyPress IS TERMINAL:INPUT:GETCHAR().
 
             IF keyPress = alarmStopKey {
