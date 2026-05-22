@@ -7,11 +7,10 @@
 logs/*
 !logs/.gitkeep
 
-# Personal copies
-system/failureInfo-anymuz.ks
+# Personal play-through scripts, ship/program docs, and rendered diagrams.
+# Lives only in the Anymuz-Personal branch; kept locally on main for reference.
+personal/
 
 # Misc
 Thumbs.db
 *.bak
-
-ships/bereshit/Bereshit-R2-old.ks

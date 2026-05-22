@@ -106,7 +106,7 @@ DECLARE FUNCTION monitorEngines {
 
             // Thrust loss failure (below 50%)
             LOCAL thrustReady IS thrustSeen AND TIME:SECONDS > thrustStartTime + startupGrace.
-            LOCAL thrustLow IS engine:MAXTHRUST > 0 AND engine:THRUST < (engine:MAXTHRUST * 0.95) AND engine:THRUST > 0.
+            LOCAL thrustLow IS engine:MAXTHRUST > 0 AND engine:THRUST < (engine:MAXTHRUST * 0.85) AND engine:THRUST > 0.
             IF hasFuel AND thrustReady AND thrustLow AND NOT thrustLossReported {
                 logMessage("Engine thrust loss detected: " + ROUND(engine:THRUST, 2) + " / " + ROUND(engine:MAXTHRUST, 2) + ".", "alert", TRUE, FALSE, TRUE).
                 logMessage("Engine output: " + ROUND((engine:THRUST / engine:MAXTHRUST) * 100, 2) + "%.", "alert", TRUE, FALSE, TRUE).

@@ -1,0 +1,20 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+flowchart TD
+    KSP["KSP / kOS CPU (vessel spawn)"] --> Boot["0:/boot/boot.ks (thin boot)"]
+    Boot -->|RUNPATH| Main["0:/system/main.ks<br/>loads logging<br/>sets shipName / shipSeries / shipVariant<br/>inits GLOBAL flightData LEXICON<br/>loads utils + audio"]
+    Main -->|RUNPATH| LoadShip["0:/system/loadShip.ks<br/>setupAudio()<br/>splits SHIP:NAME on '-'<br/>resolves shipFile path"]
+
+    LoadShip -->|EXISTS?| Decide{ship file found?}
+    Decide -->|no| Failure["0:/system/failureInfo.ks"]
+    Decide -->|yes| ShipFile["0:/ships/&lt;family&gt;/&lt;ShipName&gt;.ks"]
+
+    ShipFile -->|RUNONCEPATH| Program["0:/programs/&lt;family&gt;.ks<br/>family GLOBAL config<br/>initialize&lt;Family&gt;() helper"]
+
+    Program -->|RUNONCEPATH| Libs["0:/lib/*.ks<br/>launch / tracking / booster<br/>detonation / downrange<br/>logging / utils / audio"]
+
+    ShipFile --> Tune["Per-vehicle tuning<br/>countdownTime, azimuth, turn shape,<br/>destruct alt, clamp TWR, ..."]
+    Tune --> Seq["Mission sequence<br/>initialize&lt;Family&gt;()<br/>initializeLaunch()<br/>countdownLaunch()<br/>launchShipClampTWR()<br/>trackFlightStats()<br/>monitorEngines()<br/>armDownrangeGuidance()<br/>armAltitudeDetonation()<br/>WAIT UNTIL FALSE"]
+
+    Seq -.writes.-> Logs["archive:/logs/&lt;ShipName&gt;_flightlog.txt"]
+    Libs -.read/update.-> State["GLOBAL flightData<br/>phase, maxVelocity, apogee, ..."]
+    Seq -.update.-> State

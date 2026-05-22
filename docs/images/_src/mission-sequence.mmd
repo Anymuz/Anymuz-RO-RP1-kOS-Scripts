@@ -1,0 +1,32 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+sequenceDiagram
+    autonumber
+    participant KOS as kOS CPU
+    participant Boot as boot.ks
+    participant Main as system/main.ks
+    participant Load as system/loadShip.ks
+    participant Ship as ships/family/Name.ks
+    participant Prog as programs/family.ks
+    participant Lib as lib/*.ks
+    participant FD as flightData
+
+    KOS->>Boot: vessel unpacks
+    Boot->>Main: RUNPATH main.ks
+    Main->>Main: set shipName/Series/Variant
+    Main->>FD: initialize LEXICON
+    Main->>Load: RUNPATH loadShip.ks
+    Load->>Load: resolve shipFile from SHIP:NAME
+    Load->>Ship: RUNPATH ship script
+    Ship->>Prog: RUNONCEPATH family program
+    Prog->>Lib: RUNONCEPATH launch/tracking/booster/detonation/downrange
+    Ship->>Prog: initializeFamily(charge, variant)
+    Ship->>Lib: initializeLaunch()
+    Ship->>Lib: countdownLaunch(10)
+    Ship->>Lib: launchShipClampTWR(...)
+    Lib-->>FD: phase = "ascent"
+    Ship->>Lib: trackFlightStats()
+    Ship->>Lib: monitorEngines(...)
+    Ship->>Lib: armDownrangeGuidance(...)
+    Ship->>Lib: armAltitudeDetonation(...)
+    Note over Lib,FD: WHEN triggers update<br/>flightData & write logs
+    Ship->>KOS: WAIT UNTIL FALSE (hold open)
