@@ -109,6 +109,69 @@ Just set `launchAzimuth` (0 = north, 180 = south, 270 = west / retrograde). The 
 ### Dogleg
 Currently the function takes a single fixed `launchAzimuth`. For a dogleg, run `armDownrangeGuidance` with the initial azimuth, then issue your own `LOCK STEERING TO HEADING(newAzimuth, ...).` later in the ship script. The guidance loop will be overridden until you re-lock through it.
 
+## Maximising downrange for a target apoapsis
+
+A suborbital flight has two outputs: **apoapsis altitude** (set by the vertical component of velocity at burnout) and **downrange distance** (set by the horizontal component plus the time spent in flight). For a fixed dV budget the two trade against each other - more horizontal velocity means less vertical, so a flatter trajectory ranges further but apogees lower.
+
+In vacuum, with burnout at altitude `h_b` and ignoring Earth curvature:
+
+```
+apoapsis_above_burnout  ≈  v_y² / (2g)
+downrange_during_coast  ≈  2 · v_x · v_y / g
+```
+
+So for a target apoapsis `Ap` (e.g. 140 km) you need a fixed amount of vertical velocity at burnout:
+
+```
+v_y_required  ≈  sqrt( 2 · g · (Ap − h_b) )
+```
+
+and you want every remaining m/s of dV to go horizontal. The shape of the pitch program decides how the burn splits its energy between `v_y` and `v_x`.
+
+### Recipe: 140 km apoapsis with maximum downrange (RSS, kerolox-class)
+
+This is a tuning *starting point*, not a guaranteed solution - your TWR, drag, and dV will move the numbers. The principle is: keep the kick gentle enough to make `v_y_required`, then drive `finalPitch` as low as you can without bleeding apoapsis.
+
+```
+launchAzimuth                 = 90      // due east, free Earth-rotation bonus
+turnStartAlt                  = 0
+kickEndAlt                    = 800     // gentle, deliberate kick
+kickPitch                     = 75      // keep early flight near vertical
+turnEndAlt                    = 55000   // finish the curve well above thick atmosphere
+finalPitch                    = 28      // flat enough for range, vertical enough for 140 km
+turnShape                     = 0.85    // slightly delay the harder turn for TWR ~1.3-1.6
+guidanceEndAlt                = 100000  // hand off above ~95 km, then coast to apo
+lockProgradeAfterGuidance     = TRUE    // surface prograde keeps `v_x` working in the upper atmosphere
+```
+
+Iterate in simulation:
+
+1. Fly the profile, note actual apoapsis.
+2. **Apoapsis too low** -> raise `finalPitch` by 2-5 deg, OR raise `kickPitch` by 5 deg, OR raise `turnShape` (e.g. 0.85 -> 1.0) to keep the vehicle vertical longer.
+3. **Apoapsis too high** -> lower `finalPitch`. Every degree off vertical you can afford goes straight into more downrange.
+4. **Vehicle pitches over too hard early on** (oscillation, lost control under Q) -> raise `turnStartAlt` (e.g. 100-300 m) and/or raise `kickEndAlt` so the kick happens later and shallower.
+5. **Vehicle is still climbing nearly vertical at MECO** -> you have spare dV; lower `finalPitch` and rerun.
+
+### Why `finalPitch = 0` is a trap for sounding flights
+
+`finalPitch = 0` means the vehicle is fully horizontal at `turnEndAlt`. That maximises `v_x` but kills `v_y`, so the burn ends with little vertical velocity and the vehicle apogees only a little above `turnEndAlt`. It's correct for an orbital first stage handing off to a circularisation routine, but for a ballistic suborbital with a target apoapsis it will undershoot apogee badly. Keep `finalPitch >= ~20` whenever you actually want altitude.
+
+### Quick "knobs vs outcomes" table
+
+| You want... | Move this | Direction |
+| --- | --- | --- |
+| More apoapsis, same dV | `finalPitch` | up (more vertical) |
+| More downrange, same dV | `finalPitch` | down (more horizontal) |
+| Sharper early kick (low-TWR helps gravity losses) | `kickPitch`, `kickEndAlt` | both down |
+| Gentler early flight (high-TWR / Q-sensitive vehicle) | `kickPitch` up, `turnStartAlt` up |
+| Hold steeper attitude longer through the burn | `turnShape` | up (>1) |
+| Shed vertical earlier in the burn | `turnShape` | down (<1) |
+| End the program higher / lower | `turnEndAlt`, `guidanceEndAlt` | up / down together |
+
+### What the script does NOT do
+
+This guidance is **open-loop**: it commands a target pitch from altitude alone. It does not measure apoapsis, range, or dV-remaining and adjust. If your engines underperform, the rocket will follow the same pitch schedule and undershoot apoapsis - the script won't compensate by pitching up. Closed-loop "PEG-style" guidance (target apoapsis + target inclination + auto-tilt) is a separate problem and is not implemented here.
+
 ## Tuning checklist
 
 1. **Validate altitude ordering.** `turnStartAlt < kickEndAlt < turnEndAlt < guidanceEndAlt`. The function logs a `critical` message and returns 90 if Phase 1/2 are mis-ordered, but `guidanceEndAlt` is not validated - put it above `turnEndAlt` or guidance never finishes.
