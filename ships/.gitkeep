@@ -1,0 +1,3 @@
+# Per-vehicle ship scripts go here under <family>/ subfolders on the
+# Anymuz-Personal branch. This .gitkeep keeps the folder present on
+# main so the path layout matches what loadShip.ks expects.
