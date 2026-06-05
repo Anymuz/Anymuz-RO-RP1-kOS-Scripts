@@ -33,6 +33,30 @@ DECLARE FUNCTION countdownLaunch {
 
 // Original simple launch function., just stages and puts logs to launchmode..
 // Keeping this this for use case ordinary rockets or booster-first designs.
+// DECLARE FUNCTION launchShip {
+//     SET flightData["phase"] TO "prelaunch".
+//     LOCK THROTTLE TO 1.
+//     LOCK STEERING TO UP.
+
+//     setLogToLaunchTime("MS", TRUE).
+
+//     wait 0.1.
+//     CLEARSCREEN.
+//     logMessage("Booster ignition.", "active", TRUE, FALSE, TRUE).
+    
+//     wait 0.1.
+//     STAGE.
+//    // WAIT 0.1.
+//    //n STAGE.
+//     playLaunchSound().
+//     logMessage("Liftoff! Launch completed.", "launch", TRUE, FALSE, TRUE).
+// }.
+
+// Variant of launchShip for vehicles where main engine and boosters are ignited together.
+// This seems to cause better performance as thrust gives stability and the momentum builds sooner.
+// Stages must be set so that the first STAGE call ignites both main engine and boosters together. 
+// Booster separation and subsequent stages are handled downstream, e.g. in armBoosterSeperation.
+
 DECLARE FUNCTION launchShip {
     SET flightData["phase"] TO "prelaunch".
     LOCK THROTTLE TO 1.
@@ -40,14 +64,17 @@ DECLARE FUNCTION launchShip {
 
     setLogToLaunchTime("MS", TRUE).
 
-    wait 0.1.
+    WAIT 0.1.
     CLEARSCREEN.
-    logMessage("Booster ignition.", "active", TRUE, FALSE, TRUE).
-    
-    wait 0.1.
+    logMessage("Main engine and booster ignition.", "active", TRUE, FALSE, TRUE).
+
+    WAIT 0.1.
     STAGE.
     playLaunchSound().
-    logMessage("Liftoff! Launch completed.", "launch", TRUE, FALSE, TRUE).
+
+    // Sets flightData["phase"] straight to "main" so armBoosterSeperation, skips its own main-engine ignition STAGE call.
+    SET flightData["phase"] TO "main". 
+    logMessage("Liftoff! Simultaneous ignition completed.", "launch", TRUE, FALSE, TRUE).
 }.
 
 // =====================================================
