@@ -10,6 +10,9 @@ logs/*
 # Personal copies
 system/failureInfo-anymuz.ks
 
+# Main-branch personal/ mirror — never commit on this branch either.
+personal/
+
 # Misc
 Thumbs.db
 *.bak
