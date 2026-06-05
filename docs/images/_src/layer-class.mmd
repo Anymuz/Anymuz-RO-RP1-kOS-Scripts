@@ -23,13 +23,13 @@ classDiagram
         +fallbackFailureInfo()
     }
     class ShipScript {
-        +file ships_SERIES_NAME_ks
+        +file ships_family_name_ks
         +perVehicleTuning
         +callInitializeFamily()
         +runMissionSequence()
     }
     class Program {
-        +file programs_FAMILY_ks
+        +file programs_family_ks
         +familyGlobals
         +logConfig
         +initializeFamily()
@@ -55,7 +55,7 @@ classDiagram
         +maxApoapsisAlt
     }
     class Logs {
-        +file archive_logs_SHIP_flightlog_txt
+        +file archive_logs_shipName_flightlog_txt
     }
 
     Boot --> SystemMain : RUNPATH

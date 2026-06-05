@@ -9,7 +9,7 @@ skipLine().
 
 PRINT "Naming convention:".
 PRINT "  Series vessels:    <Series>-<Variant>".
-PRINT "    Example:         Bereshit-R1   ->  0:/ships/bereshit/Bereshit-R1.ks".
+PRINT "    Example:         Falcon-9      ->  0:/ships/falcon/Falcon-9.ks".
 PRINT "  Single vessels:    <Name>  (no dash)".
 PRINT "    Example:         Probe1        ->  0:/ships/Probe1.ks".
 skipLine().

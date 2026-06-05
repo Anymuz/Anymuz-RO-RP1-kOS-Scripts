@@ -38,7 +38,7 @@ docs/        One markdown file per script describing purpose and functions.
 - **system/** - One-time wiring that runs at vessel start. Initialises global flight state, loads shared libraries, dispatches to the right ship script based on `SHIP:NAME`, and contains failure messages for misnamed vessels.
 - **lib/** - Library code. Files only declare functions and small `GLOBAL` config lexicons. No vessel control runs at import time. Anything that locks steering, stages, or arms a `WHEN` trigger lives inside a function that the program/ship script calls explicitly.
 - **lib/sounds/** - Note and song definitions consumed by `lib/audio.ks`. One file per audio category (launch, alert, alarm).
-- **programs/** - One file per ship family (e.g. `bereshit.ks`, `bmidbar.ks`). Imports the libraries the family needs, declares family-wide globals (engine tags, resource names, thresholds), defines family-specific helpers (telemetry action groups, init banner), and configures logging.
+- **programs/** - One file per ship family. Imports the libraries the family needs, declares family-wide globals (engine tags, resource names, thresholds), defines family-specific helpers (telemetry action groups, init banner), and configures logging.
 - **ships/<family>/<ShipName>.ks** - The actual entry point for one vehicle. Imports its family program, sets per-vehicle tags and tunings, then runs the launch sequence and arms post-launch systems. Vehicles in a series share the family program; tunings live here so two variants can fly differently.
 - **logs/** - Output target for `logMessage`. Each ship gets its own `<ShipName>_flightlog.txt`. Contents are gitignored; the folder is kept via `.gitkeep`.
 - **docs/** - One markdown file per script. Each doc lists the script's purpose and a one-line summary of every function it exposes. Update the doc when you change a script's public surface; see `docs/_template.md`.
@@ -167,9 +167,13 @@ logMessage(message, messageType, consoleTimestamp, playSound, outputToConsole).
 | `lib/sounds/launchSounds.ks` | [docs/lib/sounds/launchSounds.md](docs/lib/sounds/launchSounds.md) |
 | `lib/sounds/alertSounds.ks` | [docs/lib/sounds/alertSounds.md](docs/lib/sounds/alertSounds.md) |
 | `lib/sounds/alarmSounds.ks` | [docs/lib/sounds/alarmSounds.md](docs/lib/sounds/alarmSounds.md) |
-| `programs/bereshit.ks` | [docs/programs/bereshit.md](docs/programs/bereshit.md) |
-| `programs/bmidbar.ks` | [docs/programs/bmidbar.md](docs/programs/bmidbar.md) |
-| `ships/bereshit/Bereshit-R1.ks` | [docs/ships/bereshit/Bereshit-R1.md](docs/ships/bereshit/Bereshit-R1.md) |
-| `ships/bereshit/Bereshit-R2.ks` | [docs/ships/bereshit/Bereshit-R2.md](docs/ships/bereshit/Bereshit-R2.md) |
-| `ships/bmidbar/Bmidbar-LR1.ks` | [docs/ships/bmidbar/Bmidbar-LR1.md](docs/ships/bmidbar/Bmidbar-LR1.md) |
 | Template for new docs | [docs/_template.md](docs/_template.md) |
+
+### Branch layout
+
+This repository uses two long-lived branches:
+
+- **`main`** - framework only. `boot/`, `system/`, `lib/`, the shared `docs/`, and the generic diagrams under `docs/images/`. No family programs or ship scripts are tracked here so the published framework stays vehicle-agnostic. Anyone forking should branch from `main`.
+- **`Anymuz-Personal`** - the personal play-through. Identical to `main` for everything above, plus the actual `programs/<family>.ks` and `ships/<family>/<ShipName>.ks` files used in my own career save. This is the only place family programs and per-vehicle scripts live.
+
+The `personal/` folder at the repo root is reserved for local-only artefacts (legacy ship scripts, personal failure-info overrides, per-family doc snapshots) and is gitignored on both branches.

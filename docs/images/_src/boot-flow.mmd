@@ -6,15 +6,15 @@ flowchart TD
 
     LoadShip -->|EXISTS?| Decide{ship file found?}
     Decide -->|no| Failure["0:/system/failureInfo.ks"]
-    Decide -->|yes| ShipFile["0:/ships/SERIES/NAME.ks<br/>e.g. ships/bmidbar/Bmidbar-LR1.ks"]
+    Decide -->|yes| ShipFile["0:/ships/&lt;family&gt;/&lt;ShipName&gt;.ks"]
 
-    ShipFile -->|RUNONCEPATH| Program["0:/programs/FAMILY.ks<br/>e.g. programs/bmidbar.ks<br/>family GLOBAL config<br/>initializeFAMILY() helper"]
+    ShipFile -->|RUNONCEPATH| Program["0:/programs/&lt;family&gt;.ks<br/>family GLOBAL config<br/>initialize&lt;Family&gt;() helper"]
 
     Program -->|RUNONCEPATH| Libs["0:/lib/*.ks<br/>launch / tracking / booster<br/>detonation / downrange<br/>logging / utils / audio"]
 
     ShipFile --> Tune["Per-vehicle tuning<br/>countdownTime, azimuth, turn shape,<br/>destruct alt, clamp TWR, ..."]
-    Tune --> Seq["Mission sequence<br/>initializeFAMILY()<br/>initializeLaunch()<br/>countdownLaunch()<br/>launchShipClampTWR()<br/>trackFlightStats()<br/>monitorEngines()<br/>armDownrangeGuidance()<br/>armAltitudeDetonation()<br/>WAIT UNTIL FALSE"]
+    Tune --> Seq["Mission sequence<br/>initialize&lt;Family&gt;()<br/>initializeLaunch()<br/>countdownLaunch()<br/>launchShipClampTWR()<br/>trackFlightStats()<br/>monitorEngines()<br/>armDownrangeGuidance()<br/>armAltitudeDetonation()<br/>WAIT UNTIL FALSE"]
 
-    Seq -.writes.-> Logs["archive:/logs/SHIP_flightlog.txt"]
+    Seq -.writes.-> Logs["archive:/logs/&lt;ShipName&gt;_flightlog.txt"]
     Libs -.read/update.-> State["GLOBAL flightData<br/>phase, maxVelocity, apogee, ..."]
     Seq -.update.-> State
