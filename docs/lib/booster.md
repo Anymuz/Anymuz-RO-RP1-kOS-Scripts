@@ -3,12 +3,15 @@
 Path: `0:/lib/booster.ks`
 
 ## Purpose
-Booster-stage ignition check and main-engine handoff for vehicles that ignite a strap-on or first-stage booster before the main engine. Watches booster fuel and stages the main engine when fuel drops below a configured threshold, then separates the booster.
+Booster-stage ignition check and main-engine handoff. Watches booster fuel and runs two triggers depending on the launch flow chosen by the ship: ignites the main engine just before booster burnout (sequential flow), then separates spent boosters once fuel is below a safe-separation threshold.
 
 ## Functions
-- `armBoosterSeperation(boosterTag, boosterFuelName, preigniteMainFuel, boosterShutdownFuel)` - sets phase to `booster`, checks for partial booster ignition (any partial failure triggers `selfDestruct`), then arms a `WHEN TRUE THEN` loop that:
-  1. Stages the main engine when booster fuel falls below `preigniteMainFuel`.
-  2. Stages booster separation when fuel falls below `2 * boosterShutdownFuel` (avoids dry separation jolt).
+- `armBoosterSeperation(boosterTag, boosterFuelName, preigniteMainFuel, boosterShutdownFuel)` - reads the current `flightData["phase"]`, then arms a `WHEN TRUE THEN` loop:
+  - If the launch function already set phase to `main` (simultaneous ignition - main engine + boosters lit together), this function leaves the phase alone and **skips Trigger A**. Only Trigger B (separation) runs.
+  - Otherwise it sets phase to `booster` and runs the legacy sequential flow:
+    1. **Trigger A** stages the main engine when booster fuel falls below `preigniteMainFuel`.
+    2. **Trigger B** stages booster separation once fuel falls below `1.5 * boosterShutdownFuel` (avoids dry-separation instability).
+  - Partial booster ignition (some boosters lit, others not) calls `selfDestruct` immediately.
 
 ## Notes
-Tune `preigniteMainFuel` so the main engine ignites roughly 1-2 seconds before the booster burns out. Tune `boosterShutdownFuel` to whatever the boosters actually shut down at on the test stand. Both are absolute amounts, not percentages.
+Tune `preigniteMainFuel` so the main engine ignites roughly 1-2 seconds before the booster burns out (sequential flow only). Tune `boosterShutdownFuel` to whatever the boosters actually shut down at on the test stand. Both are absolute amounts, not percentages. For simultaneous-ignition vehicles only the separation threshold matters; `preigniteMainFuel` is unused.

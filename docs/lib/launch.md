@@ -3,7 +3,7 @@
 Path: `0:/lib/launch.ks`
 
 ## Purpose
-Launch sequencing. Two ignition styles are supported: a simple stage-and-go for solid-first or booster-first vehicles, and a clamp-held liquid ignition that releases the clamp only after a stable TWR is confirmed. Also provides the standby prompt and the countdown.
+Launch sequencing. Two ignition styles are supported: a simultaneous main-engine + booster ignition for cluster-style first stages, and a clamp-held liquid ignition that releases the clamp only after a stable TWR is confirmed. Also provides the standby prompt and the countdown.
 
 ## Functions
 
@@ -12,7 +12,7 @@ Launch sequencing. Two ignition styles are supported: a simple stage-and-go for 
 - `countdownLaunch(seconds)` - on-screen countdown with countdown tone every second.
 
 ### Simple launch
-- `launchShip()` - sets `flightData["phase"]` to prelaunch, locks throttle and steering, calls `STAGE`, plays launch sound, logs liftoff.
+- `launchShip()` - simultaneous main-engine + booster ignition. Sets `flightData["phase"]` to `prelaunch`, locks throttle and steering, calls `STAGE` (which must light the main engine and boosters together), plays launch sound, then sets `flightData["phase"]` directly to `main` so `armBoosterSeperation` skips its own main-engine ignition trigger. Better stability and momentum buildup than the prior booster-only ignition. The legacy booster-first variant remains commented out at the top of the function for vehicles that need it back.
 
 ### Clamp-held tagged-engine helpers (pure)
 - `getTaggedEngineThrust(engineTag)` - sum of current thrust across tagged engines.
