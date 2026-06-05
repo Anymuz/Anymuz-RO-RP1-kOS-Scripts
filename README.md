@@ -173,7 +173,7 @@ logMessage(message, messageType, consoleTimestamp, playSound, outputToConsole).
 
 This repository uses two long-lived branches:
 
-- **`main`** - framework only. `boot/`, `system/`, `lib/`, the shared `docs/`, and the generic diagrams under `docs/images/`. No family programs or ship scripts are tracked here so the published framework stays vehicle-agnostic. Anyone forking should branch from `main`.
-- **`Anymuz-Personal`** - the personal play-through. Identical to `main` for everything above, plus the actual `programs/<family>.ks` and `ships/<family>/<ShipName>.ks` files used in my own career save. This is the only place family programs and per-vehicle scripts live.
+- **`main`** - framework only. `boot/`, `system/`, `lib/`, the shared `docs/`, and the generic diagrams under `docs/images/`. No family programs or ship scripts are tracked here so the published framework stays vehicle-agnostic. Anyone wanting to use this framework for their own games should clone from `main`.
+- **`Anymuz-Personal`** - my personal play-through. Identical to `main` for everything above, plus the actual `programs/<family>.ks` and `ships/<family>/<ShipName>.ks` files used in my own career save. This is the only place family programs and per-vehicle scripts live. Since they are unique to my designs they can be used as examples but wont conform to other ship designs.
 
 The `personal/` folder at the repo root is reserved for local-only artefacts (legacy ship scripts, personal failure-info overrides, per-family doc snapshots) and is gitignored on both branches.
