@@ -7,11 +7,8 @@
 logs/*
 !logs/.gitkeep
 
-# Personal play-through scripts, ship/program docs, and rendered diagrams.
-# Lives only in the Anymuz-Personal branch; kept locally on main for reference.
-personal/
-
-# Main-branch personal/ mirror — never commit on this branch either.
+# Personal-only artefacts (legacy scripts, override files, snapshots).
+# Gitignored on both branches so local copies never get committed.
 personal/
 
 # Misc
