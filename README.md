@@ -169,4 +169,11 @@ logMessage(message, messageType, consoleTimestamp, playSound, outputToConsole).
 | `lib/sounds/alarmSounds.ks` | [docs/lib/sounds/alarmSounds.md](docs/lib/sounds/alarmSounds.md) |
 | Template for new docs | [docs/_template.md](docs/_template.md) |
 
-Family program scripts (`programs/<family>.ks`) and per-vehicle scripts (`ships/<family>/<ShipName>.ks`) live alongside their `docs/` counterparts when present. The reference implementation used during development is kept in a separate `Anymuz-Personal` branch.
+### Branch layout
+
+This repository uses two long-lived branches:
+
+- **`main`** - framework only. `boot/`, `system/`, `lib/`, the shared `docs/`, and the generic diagrams under `docs/images/`. No family programs or ship scripts are tracked here so the published framework stays vehicle-agnostic. Anyone forking should branch from `main`.
+- **`Anymuz-Personal`** - the personal play-through. Identical to `main` for everything above, plus the actual `programs/<family>.ks` and `ships/<family>/<ShipName>.ks` files used in my own career save. This is the only place family programs and per-vehicle scripts live.
+
+The `personal/` folder at the repo root is reserved for local-only artefacts (legacy ship scripts, personal failure-info overrides, per-family doc snapshots) and is gitignored on both branches.
