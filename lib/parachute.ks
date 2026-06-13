@@ -66,8 +66,11 @@ DECLARE FUNCTION printRealChuteInfo {
 // Returns TRUE if all chutes were successfully armed.
 DECLARE FUNCTION armRealChutes {
     DECLARE PARAMETER chuteTag IS "chute".
-    DECLARE PARAMETER armEventName IS "Arm Parachute".
-    DECLARE PARAMETER armActionName IS "Arm Parachute".
+    // armEventName / armActionName: get these by running printRealChuteInfo("chute")
+    // in simulation. Copy the string exactly from the "Events" or "Actions" line.
+    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
+    DECLARE PARAMETER armEventName IS "Arm parachute".
+    DECLARE PARAMETER armActionName IS "Arm parachute".
 
     LOCAL chuteParts IS SHIP:PARTSTAGGED(chuteTag).
 
@@ -118,8 +121,9 @@ DECLARE FUNCTION armRealChutes {
 DECLARE FUNCTION armChuteAtAltitude {
     DECLARE PARAMETER armAlt IS 8000.
     DECLARE PARAMETER chuteTag IS "chute".
-    DECLARE PARAMETER armEventName IS "Arm Parachute".
-    DECLARE PARAMETER armActionName IS "Arm Parachute".
+    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
+    DECLARE PARAMETER armEventName IS "Arm parachute".
+    DECLARE PARAMETER armActionName IS "Arm parachute".
     DECLARE PARAMETER useRadarAlt IS FALSE.
 
     logMessage("Chute arm trigger set: descend through " + armAlt + "m.", "info", TRUE, FALSE, TRUE).
@@ -158,8 +162,11 @@ DECLARE FUNCTION armChuteAtAltitude {
 // Returns TRUE if all chutes were successfully commanded to deploy.
 DECLARE FUNCTION deployRealChutes {
     DECLARE PARAMETER chuteTag IS "chute".
-    DECLARE PARAMETER deployEventName IS "Deploy Parachute".
-    DECLARE PARAMETER deployActionName IS "Deploy Parachute".
+    // deployEventName / deployActionName: get these by running printRealChuteInfo("chute")
+    // in simulation. Copy the string exactly from the "Events" or "Actions" line.
+    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
+    DECLARE PARAMETER deployEventName IS "Deploy Chute".
+    DECLARE PARAMETER deployActionName IS "Deploy chute".
 
     LOCAL chuteParts IS SHIP:PARTSTAGGED(chuteTag).
 
@@ -207,8 +214,12 @@ DECLARE FUNCTION deployRealChutes {
 DECLARE FUNCTION deployChuteAtAltitude {
     DECLARE PARAMETER deployAlt IS 3000.
     DECLARE PARAMETER chuteTag IS "chute".
-    DECLARE PARAMETER deployEventName IS "Deploy Parachute".
-    DECLARE PARAMETER deployActionName IS "Deploy Parachute".
+    // deployEventName / deployActionName: the exact strings come from running
+    // printRealChuteInfo("chute") in simulation. Look at the "Events" and
+    // "Actions" lines it prints for your chute part and copy them here.
+    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
+    DECLARE PARAMETER deployEventName IS "Deploy Chute".
+    DECLARE PARAMETER deployActionName IS "Deploy chute".
     DECLARE PARAMETER useRadarAlt IS TRUE.
 
     logMessage("Chute deploy trigger set: descend through " + deployAlt + "m.", "info", TRUE, FALSE, TRUE).
