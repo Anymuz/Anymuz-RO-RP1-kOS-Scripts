@@ -1,13 +1,15 @@
 // 0:/lib/parachute.ks
-// RealChute parachute arming and deployment helpers.
+// RealChute parachute arming helpers.
 // Designed for RealChute parachutes in RO/RP1. Requires lib/logging.ks.
+//
+// HOW REALCHUTE WORKS:
+//   Arming is all you need to do from kOS. When you arm the chute, RealChute
+//   stages it internally and then deploys it automatically once conditions are
+//   safe (correct altitude and dynamic pressure). No separate deploy call needed.
 //
 // TYPICAL USAGE in a ship script:
 //   RUNONCEPATH("0:/lib/parachute.ks").
-//   // Step 1 - arm the chute above the safe arm altitude, e.g. 8 km.
-//   armChuteAtAltitude(8000, "chute").
-//   // Step 2 - deploy (open) the chute lower, e.g. 2 km above ground.
-//   deployChuteAtAltitude(2000, "chute", TRUE).  // TRUE = use radar alt
+//   armChuteAtAltitude(8000, "chute").  // arm when descending through 8 km
 //
 // FIRST TIME SETUP:
 //   Run printRealChuteInfo("chute") in simulation to see the exact event/action
@@ -143,97 +145,6 @@ DECLARE FUNCTION armChuteAtAltitude {
             // No PRESERVE - trigger fires once then stops.
         } ELSE {
             // Not yet below armAlt - keep watching.
-            PRESERVE.
-        }.
-    }.
-}.
-
-// =====================================================
-// DEPLOYMENT
-// =====================================================
-// "Deploying" actually opens the chute. RealChute will wait for safe dynamic
-// pressure even after you call deploy, so it is safe to deploy slightly early.
-// Typical sequence: arm at ~8 km, deploy at ~2-3 km radar altitude.
-
-// Deploys (opens) all RealChute parachutes on parts tagged chuteTag.
-//   chuteTag        -> VAB tag on your chute parts.
-//   deployEventName -> right-click event name (verify with printRealChuteInfo).
-//   deployActionName-> fallback action name if the event is not visible.
-// Returns TRUE if all chutes were successfully commanded to deploy.
-DECLARE FUNCTION deployRealChutes {
-    DECLARE PARAMETER chuteTag IS "chute".
-    // deployEventName / deployActionName: get these by running printRealChuteInfo("chute")
-    // in simulation. Copy the string exactly from the "Events" or "Actions" line.
-    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
-    DECLARE PARAMETER deployEventName IS "Deploy Chute".
-    DECLARE PARAMETER deployActionName IS "Deploy chute".
-
-    LOCAL chuteParts IS SHIP:PARTSTAGGED(chuteTag).
-
-    IF chuteParts:LENGTH = 0 {
-        logMessage("deployRealChutes: no parts tagged '" + chuteTag + "' found.", "warning", TRUE, FALSE, TRUE).
-        RETURN FALSE.
-    }.
-
-    LOCAL deployed IS 0.  // Running count of chutes successfully commanded.
-
-    FOR p IN chuteParts {
-        IF p:HASMODULE("RealChuteModule") {
-            LOCAL m IS p:GETMODULE("RealChuteModule").
-
-            // Same event-first, action-fallback pattern as arming.
-            IF m:HASEVENT(deployEventName) {
-                m:DOEVENT(deployEventName).
-                SET deployed TO deployed + 1.
-                logMessage("Parachute deploy commanded (event) on '" + p:TAG + "'.", "info", TRUE, FALSE, TRUE).
-            } ELSE IF m:HASACTION(deployActionName) {
-                m:DOACTION(deployActionName, TRUE).
-                SET deployed TO deployed + 1.
-                logMessage("Parachute deploy commanded (action) on '" + p:TAG + "'.", "info", TRUE, FALSE, TRUE).
-            } ELSE {
-                logMessage("Deploy event/action not found on '" + p:TAG + "'. Run printRealChuteInfo() to check names.", "warning", TRUE, FALSE, TRUE).
-            }.
-        } ELSE {
-            logMessage("Part '" + p:TAG + "' has no RealChuteModule.", "warning", TRUE, FALSE, TRUE).
-        }.
-    }.
-
-    logMessage("Parachutes deploy commanded: " + deployed + "/" + chuteParts:LENGTH + ".", "alert", TRUE, TRUE, TRUE).
-    RETURN deployed = chuteParts:LENGTH.
-}.
-
-// Sets a descent trigger that calls deployRealChutes() when falling through deployAlt.
-// RealChute will still wait for safe dynamic pressure before physically opening,
-// so calling this slightly above the desired opening altitude is fine.
-//   deployAlt        -> altitude in metres at which to deploy.
-//   chuteTag         -> VAB tag on your chute parts.
-//   deployEventName  -> event name from printRealChuteInfo().
-//   deployActionName -> fallback action name from printRealChuteInfo().
-//   useRadarAlt      -> TRUE = radar (ground) alt, FALSE = sea-level alt.
-//                       Use TRUE for landing on terrain away from sea level.
-DECLARE FUNCTION deployChuteAtAltitude {
-    DECLARE PARAMETER deployAlt IS 3000.
-    DECLARE PARAMETER chuteTag IS "chute".
-    // deployEventName / deployActionName: the exact strings come from running
-    // printRealChuteInfo("chute") in simulation. Look at the "Events" and
-    // "Actions" lines it prints for your chute part and copy them here.
-    // Defaults confirmed from RealChuteModule.cs source (github.com/ChrisViral/RealChute).
-    DECLARE PARAMETER deployEventName IS "Deploy Chute".
-    DECLARE PARAMETER deployActionName IS "Deploy chute".
-    DECLARE PARAMETER useRadarAlt IS TRUE.
-
-    logMessage("Chute deploy trigger set: descend through " + deployAlt + "m.", "info", TRUE, FALSE, TRUE).
-
-    WHEN SHIP:VERTICALSPEED < 0 THEN {
-
-        LOCAL currentAlt IS ALTITUDE.
-        IF useRadarAlt { SET currentAlt TO ALT:RADAR. }.
-
-        IF currentAlt < deployAlt {
-            logMessage("Deploy altitude reached (" + ROUND(currentAlt) + "m). Deploying parachutes.", "alert", TRUE, TRUE, TRUE).
-            deployRealChutes(chuteTag, deployEventName, deployActionName).
-            // No PRESERVE - fires once then expires.
-        } ELSE {
             PRESERVE.
         }.
     }.
