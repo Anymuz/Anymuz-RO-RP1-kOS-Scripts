@@ -29,16 +29,27 @@ LOCAL requirePropellantDrain IS FALSE.
 // LOCAL earlyControlAlt IS 500.
 // LOCAL earlyMinPitch IS 72.
 
+// Previous working profile:
 LOCAL turnStartAlt IS 0.
 LOCAL kickEndAlt IS 1000.
-LOCAL turnEndAlt IS 30000.
+LOCAL turnEndAlt IS 35000.
 LOCAL kickPitch IS 80.
 LOCAL finalPitch IS 40.
 LOCAL turnShape IS 1.0.
 LOCAL guidanceEndAlt IS 90000.
 LOCAL lockProgradeAfterGuidance IS TRUE.
 
-// USE THIS:
+// Downrange sounding profile:
+// LOCAL turnStartAlt IS 0.
+// LOCAL kickEndAlt IS 1000.
+// LOCAL turnEndAlt IS 50000.
+// LOCAL kickPitch IS 75.
+// LOCAL finalPitch IS 30.
+// LOCAL turnShape IS 0.8.
+// LOCAL guidanceEndAlt IS 100000.
+// LOCAL lockProgradeAfterGuidance IS TRUE.
+
+// USE THIS IF ALL ELSE FAILS::
 // LOCAL turnStartAlt IS 0.
 // LOCAL kickEndAlt IS 1200.
 // LOCAL turnEndAlt IS 35000.

@@ -61,8 +61,8 @@ DECLARE FUNCTION activateTelemetry {
         WAIT 0.2.
         logMessage("Telemetry data and sensors ready to auto transmit.", "info", TRUE, FALSE, TRUE).
         skipLine().
-    } ELSE IF seriesVariant:TOUPPER() = "R2" {
-        logMessage("Activating telemetry for Bereshit R2", "system", TRUE, FALSE, TRUE).
+    } ELSE IF seriesVariant:TOUPPER() = "R2" OR seriesVariant:TOUPPER() = "R3" OR seriesVariant:TOUPPER() = "R4" {
+        logMessage("Activating telemetry for Bereshit " + seriesVariant, "system", TRUE, FALSE, TRUE).
         AG1 ON.
         WAIT 0.1.
         logMessage("Sensors, telemetry and transmission are standby.", "online", TRUE, FALSE, TRUE).
@@ -73,18 +73,6 @@ DECLARE FUNCTION activateTelemetry {
         logMessage("Telemetry activation failed, no sensors activated.", "warning", TRUE, FALSE, TRUE).
         skipLine().
     }.
-}.
-
-
-DECLARE FUNCTION startupMessage {
-    DECLARE PARAMETER electricChargeLevel IS 0.
-
-    logMessage("Electrics are LIVE, systems are now running on internal power.", "alert", TRUE, TRUE, TRUE).
-    // logMessage("Start launch ASAP to avoid excessive EC depletion.", "system", TRUE, FALSE, TRUE). // now Use luach clamp 
-    logMessage("On startup this vehicle has: " +ROUND(electricChargeLevel, 2) + "KJ.", "system", TRUE, FALSE, TRUE).
-    //logMessage("Manually ensure EC level is sufficient before launch.", "system", TRUE, FALSE, TRUE). // Not needed
-    skipLine().
-    WAIT 0.5.
 }.
 
 

@@ -8,8 +8,10 @@ RUNONCEPATH("0:/programs/bereshit.ks"). // Import ship specific functions and te
 
 // Launch parameters.
 LOCAL countdownTime IS 10. // Seconds to count down from before launch.
-LOCAL destructAlt IS 30000. //  Science data wont be collected below this altitude -> safe destruct altitude to prevent ground impact.
+LOCAL deployAlt IS 15000. //  Science data wont be collected below this altitude -> safe destruct altitude to prevent ground impact.
 LOCAL useRadarAlt IS FALSE. // Set to true to use radar altitude for destruct, false for sea level altitude. Radar accurate but less stable.
+LOCAL parachuteType IS "V1-PARACHUTE". // Set this to the part tag for the parachute, used for parachute deployment checks, set to any non-existent tag if not using parachutes.
+LOCAL fairingType IS "CHUTE-CASE". // Set this to the part tag for the fairing, used for fairing jettison checks, set to any non-existent tag if not using fairings.
 
 // Resource levels.
 // LOCAL boosterFuelLevel IS 19.2. // Set this to the initial fuel level of the boosters.
@@ -27,8 +29,8 @@ LOCAL useRadarAlt IS FALSE. // Set to true to use radar altitude for destruct, f
 // -----------------------------------
 
 // TEMP: run once in sim to find RealChute event/action names, then remove this block.
-// RUNONCEPATH("0:/lib/parachute.ks").
-// printRealChuteInfo("chute").
+RUNONCEPATH("0:/lib/parachute.ks").
+
 
 // Startup for electronics and telemetry.
 //print electricChargeLevel.
@@ -48,8 +50,8 @@ trackFlightStats().
 logMessage("Flight stats tracking online.", "online", TRUE, FALSE, TRUE).
 monitorEngines(mainEngine, propellant, oxidizer, fuelThreshold, fuelTank, mainEngineStartThreshold).
 logMessage("Engine monitoring active.", "online", TRUE, FALSE, TRUE).
-armAltitudeDetonation(destructAlt, useRadarAlt).
-logMessage("Altitude safety detonator armed.", "warning", TRUE, FALSE, TRUE).
+armParachute(parachuteType, deployAlt, useRadarAlt, fairingType).
+logMessage("Parachutes armed.", "warning", TRUE, FALSE, TRUE).
 // -----------------------------------
 
 // Wait indefinitely to prevent exiting mid-flight.

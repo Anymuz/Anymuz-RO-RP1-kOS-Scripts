@@ -31,6 +31,17 @@ DECLARE FUNCTION countBoosterIgnitions {
     RETURN ignitedCount.
 }.
 
+DECLARE FUNCTION startupMessage {
+    DECLARE PARAMETER electricChargeLevel IS 0.
+
+    logMessage("Electrics are LIVE, systems are now running on internal power.", "alert", TRUE, TRUE, TRUE).
+    // logMessage("Start launch ASAP to avoid excessive EC depletion.", "system", TRUE, FALSE, TRUE). // now Use luach clamp 
+    logMessage("On startup this vehicle has: " +ROUND(electricChargeLevel, 2) + "KJ.", "system", TRUE, FALSE, TRUE).
+    //logMessage("Manually ensure EC level is sufficient before launch.", "system", TRUE, FALSE, TRUE). // Not needed
+    skipLine().
+    WAIT 0.5.
+}.
+
 DECLARE FUNCTION outputFlightData {
     logMessage("Outputting flight data.", "info", TRUE, FALSE, FALSE).
 
