@@ -56,7 +56,7 @@ DECLARE FUNCTION initalizeBmidbar {
         logBreaker("New Misssion: " + shipName).
         setLogToShipTime("MS", TRUE).
         logMessage("Ship systems initializing.", "system", TRUE, FALSE, TRUE).
-        activateTelemetry(seriesVariant).
+        activateSystems(seriesVariant).
         startupMessage(electricChargeLevel).
         logMessage("Audio systems updating.", "system", TRUE, FALSE, TRUE).
         armAlarmKeyStop(bmidbarAlarmStopKey).
@@ -70,8 +70,8 @@ DECLARE FUNCTION initalizeBmidbar {
 }.
 
 // B,midbar is a separate class of rocket with its ownn telemetry and sensors.
-DECLARE FUNCTION activateTelemetry {
-    DECLARE PARAMETER seriesVariant IS "R1".
+DECLARE FUNCTION activateSystems {
+    DECLARE PARAMETER seriesVariant IS "LR1".
 
     IF seriesVariant:TOUPPER() = "LR1" {
         logMessage("Activating telemetry for Bereshit LR1", "system", TRUE, FALSE, TRUE).
@@ -79,6 +79,12 @@ DECLARE FUNCTION activateTelemetry {
         WAIT 0.5.
         logMessage("Sensors, telemetry and transmission are standby.", "online", TRUE, FALSE, TRUE).
         logMessage("Telemetry data and sensors ready to auto transmit.", "info", TRUE, FALSE, TRUE).
+        skipLine().
+    } ELSE IF seriesVariant:TOUPPER() = "LR2" {
+        logMessage("Activating camera for Bereshit LR2", "system", TRUE, FALSE, TRUE).
+        AG1 ON.
+        WAIT 0.5.
+        logMessage("Reconnaissance camera is standby.", "online", TRUE, FALSE, TRUE).
         skipLine().
     } ELSE {
         logMessage("Unknown series variant for telemetry activation.", "warning", TRUE, TRUE, TRUE).

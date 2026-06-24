@@ -13,7 +13,8 @@ flowchart TD
     Program -->|RUNONCEPATH| Libs["0:/lib/*.ks<br/>launch / tracking / booster<br/>detonation / downrange<br/>logging / utils / audio"]
 
     ShipFile --> Tune["Per-vehicle tuning<br/>countdownTime, azimuth, turn shape,<br/>destruct alt, clamp TWR, ..."]
-    Tune --> Seq["Mission sequence<br/>initialize&lt;Family&gt;()<br/>initializeLaunch()<br/>countdownLaunch()<br/>launchShipClampTWR()<br/>trackFlightStats()<br/>monitorEngines()<br/>armDownrangeGuidance()<br/>armAltitudeDetonation()<br/>WAIT UNTIL FALSE"]
+    Tune --> Seq["Mission sequence<br/>initialize&lt;Family&gt;()<br/>initializeLaunch()<br/>countdownLaunch()<br/>launchShip() / launchShipClampTWR()<br/>trackFlightStats()<br/>monitorEngines()<br/>post-launch arming (per vehicle)<br/>WAIT UNTIL FALSE"]
+    Seq -->|per vehicle| Arm["Post-launch arming (pick what the vehicle needs)<br/>armBoosterSeperation()<br/>armDownrangeGuidance()<br/>armAltitudeDetonation()<br/>armParachute()"]
 
     Seq -.writes.-> Logs["archive:/logs/&lt;ShipName&gt;_flightlog.txt"]
     Libs -.read/update.-> State["GLOBAL flightData<br/>phase, maxVelocity, apogee, ..."]

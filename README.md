@@ -10,7 +10,7 @@ The primary  purpose of this repo is for a video game and to have fun, therefore
 
 ## kOS Scripts for KSP (RO/RP1)
 
-KerboScript scripts for the [kOS](https://ksp-kos.github.io/KOS/) mod, written for Kerbal Space Program with the Realism Overhaul / Realistic Progression 1 modset. They cover prelaunch checks, clamp-held ignition, downrange guidance, flight tracking, engine monitoring, an audio driver, a logging system, and a safety destruct.
+KerboScript scripts for the [kOS](https://ksp-kos.github.io/KOS/) mod, written for Kerbal Space Program with the Realism Overhaul / Realistic Progression 1 modset. They cover prelaunch checks, clamp-held ignition, downrange guidance, flight tracking, engine monitoring, an audio driver, a logging system, parachute recovery, and a safety destruct.
 
 This is a personal project that grows mission by mission. Layout and conventions are stable, but ships, programs, and tunings are added or changed as new vehicles are designed and flown. Scripts are tested in the in-game simulation feature before being used on career flights.
 
@@ -74,7 +74,8 @@ kOS part boots
    - set per-ship tags, resources, thresholds, guidance profile
    - call init<Family>(electricChargeLevel, shipVariant)
    - run launch sequence (initializeLaunch -> countdownLaunch -> launch...)
-   - arm post-launch systems (tracking, engine monitor, downrange, destruct)
+   - arm post-launch systems, picked per vehicle
+     (tracking, engine monitor, booster sep, downrange, destruct, parachute)
    - WAIT UNTIL FALSE
 ```
 
@@ -164,6 +165,7 @@ logMessage(message, messageType, consoleTimestamp, playSound, outputToConsole).
 | `lib/tracking.ks` | [docs/lib/tracking.md](docs/lib/tracking.md) |
 | `lib/downrange.ks` | [docs/lib/downrange.md](docs/lib/downrange.md) |
 | `lib/detonation.ks` | [docs/lib/detonation.md](docs/lib/detonation.md) |
+| `lib/parachute.ks` | [docs/lib/parachute.md](docs/lib/parachute.md) |
 | `lib/sounds/launchSounds.ks` | [docs/lib/sounds/launchSounds.md](docs/lib/sounds/launchSounds.md) |
 | `lib/sounds/alertSounds.ks` | [docs/lib/sounds/alertSounds.md](docs/lib/sounds/alertSounds.md) |
 | `lib/sounds/alarmSounds.ks` | [docs/lib/sounds/alarmSounds.md](docs/lib/sounds/alarmSounds.md) |

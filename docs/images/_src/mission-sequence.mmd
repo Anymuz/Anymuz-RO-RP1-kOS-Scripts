@@ -26,7 +26,7 @@ sequenceDiagram
     Lib-->>FD: phase = "ascent"
     Ship->>Lib: trackFlightStats()
     Ship->>Lib: monitorEngines(...)
-    Ship->>Lib: armDownrangeGuidance(...)
-    Ship->>Lib: armAltitudeDetonation(...)
+    Note over Ship,Lib: Post-launch arming (per vehicle):<br/>armBoosterSeperation / armDownrangeGuidance /<br/>armAltitudeDetonation / armParachute
+    Ship->>Lib: arm post-launch systems(...)
     Note over Lib,FD: WHEN triggers update<br/>flightData & write logs
     Ship->>KOS: WAIT UNTIL FALSE (hold open)

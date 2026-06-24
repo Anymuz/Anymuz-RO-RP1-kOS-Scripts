@@ -45,9 +45,9 @@ SET logConfig["logFile"] TO "archive:/logs/" + shipName + "_flightlog.txt".
 // Functions specific to Bereshit classification sounding rockets.
 DECLARE FUNCTION activateTelemetry {
     DECLARE PARAMETER seriesVariant IS "R1".
-
+     logMessage("Activating systems for Bereshit " + seriesVariant, "system", TRUE, FALSE, TRUE).
     IF seriesVariant:TOUPPER() = "R1" {
-        logMessage("Activating telemetry for Bereshit R1", "system", TRUE, FALSE, TRUE).
+       // logMessage("Activating telemetry for Bereshit R1", "system", TRUE, FALSE, TRUE).
         AG1 ON.
         WAIT 0.2.
         logMessage("Telemetry transmission.", "online", TRUE, FALSE, TRUE).
@@ -62,11 +62,21 @@ DECLARE FUNCTION activateTelemetry {
         logMessage("Telemetry data and sensors ready to auto transmit.", "info", TRUE, FALSE, TRUE).
         skipLine().
     } ELSE IF seriesVariant:TOUPPER() = "R2" OR seriesVariant:TOUPPER() = "R3" OR seriesVariant:TOUPPER() = "R4" {
-        logMessage("Activating telemetry for Bereshit " + seriesVariant, "system", TRUE, FALSE, TRUE).
+        //logMessage("Activating telemetry for Bereshit " + seriesVariant, "system", TRUE, FALSE, TRUE).
         AG1 ON.
         WAIT 0.1.
         logMessage("Sensors, telemetry and transmission are standby.", "online", TRUE, FALSE, TRUE).
         logMessage("Telemetry data and sensors ready to auto transmit.", "info", TRUE, FALSE, TRUE).
+        skipLine().
+    } ELSE IF seriesVariant:TOUPPER() = "R5"  { //OR seriesVariant:TOUPPER() = "R6" {
+       // logMessage("Activating telemetry for Bereshit " + seriesVariant, "system", TRUE, FALSE, TRUE).
+       AG1 ON.
+        WAIT 0.1.
+        logMessage("Biological experiment active.", "online", TRUE, FALSE, TRUE).
+        WAIT 0.1.
+        logMessage("Telemetry and transmission are standby.", "online", TRUE, FALSE, TRUE).
+        WAIT 0.1.
+        logMessage("Telemetry data ready to auto transmit.", "info", TRUE, FALSE, TRUE).
         skipLine().
     } ELSE {
         logMessage("Unknown series variant for telemetry activation.", "warning", TRUE, TRUE, TRUE).

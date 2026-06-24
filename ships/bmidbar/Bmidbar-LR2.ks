@@ -1,6 +1,8 @@
 RUNONCEPATH("0:/programs/bmidbar.ks").
 LOCAL countdownTime IS 10.
-LOCAL destructAlt IS 30000.
+LOCAL deployAlt IS 7000.
+LOCAL parachuteType IS "LR-PARACHUTE".  // Set this to the part tag for the parachute, used for parachute deployment checks, set to any non-existent tag if not using parachutes.
+LOCAL fairingType IS "CHUTE-CASE".  // Set this to the part tag for the fairing, used for fairing jettison checks, set to any non-existent tag if not using fairings.
 LOCAL useRadarAlt IS FALSE.
 
 // Clamp-held launch.
@@ -19,34 +21,27 @@ LOCAL requirePropellantDrain IS FALSE.
 // LOCAL guidanceEndAlt IS 90000.
 // LOCAL lockProgradeAfterGuidance IS TRUE.
 
- LOCAL launchAzimuth IS 90.
-
-// LOCAL turnStartAlt IS 50.
-// LOCAL turnEndAlt IS 35000.
-// LOCAL finalPitch IS 38.
-// LOCAL turnShape IS 1.05.
-
-// LOCAL earlyControlAlt IS 500.
-// LOCAL earlyMinPitch IS 72.
-
-// LR1  working profile:
+LOCAL launchAzimuth IS 90.
 // LOCAL turnStartAlt IS 0.
 // LOCAL kickEndAlt IS 1000.
 // LOCAL turnEndAlt IS 35000.
-// LOCAL kickPitch IS 80.
+// LOCAL kickPitch IS 70.
 // LOCAL finalPitch IS 40.
-// LOCAL turnShape IS 1.0.
-// LOCAL guidanceEndAlt IS 90000.
+// LOCAL turnShape IS 0.85.
+// LOCAL guidanceEndAlt IS 70000.
 // LOCAL lockProgradeAfterGuidance IS FALSE.
 
-// LR3  working profile:
+//  LOCAL launchAzimuth IS 90.
+//  Previous working profile:
 LOCAL turnStartAlt IS 0.
 LOCAL kickEndAlt IS 1000.
 LOCAL turnEndAlt IS 35000.
 LOCAL kickPitch IS 80.
-LOCAL finalPitch IS 30.
-LOCAL turnShape IS 0.95.
+LOCAL finalPitch IS 40.
+LOCAL turnShape IS 1.
+//LOCAL turnShape IS 0.85.
 LOCAL guidanceEndAlt IS 90000.
+//LOCAL guidanceEndAlt IS 70000.
 LOCAL lockProgradeAfterGuidance IS FALSE.
 
 // Downrange sounding profile:
@@ -72,10 +67,10 @@ LOCAL lockProgradeAfterGuidance IS FALSE.
 // ================================
 // STARTUP
 // =====================================================
-
+RUNONCEPATH("0:/lib/parachute.ks").
 initalizeBmidbar(electricChargeLevel, shipVariant).
 
-logMessage("Bmidbar LR1 downrange mission script loaded.", "mission", TRUE, FALSE, TRUE).
+logMessage("Bmidbar LR2 planetary reconnaissance loaded.", "mission", TRUE, FALSE, TRUE).
 logMessage("No booster stage configured for this vehicle.", "mission", TRUE, FALSE, TRUE).
 logMessage("Clamp release TWR target: " + clampReleaseTWR + ".", "mission", TRUE, FALSE, TRUE).
 skipLine().
@@ -119,6 +114,15 @@ monitorEngines(
 ).
 logMessage("Engine monitoring active.", "online", TRUE, FALSE, FALSE).
 
+
+armParachute(
+    parachuteType, 
+    deployAlt, 
+    useRadarAlt, 
+    fairingType
+).
+logMessage("Parachutes armed.", "warning", TRUE, FALSE, TRUE).
+
 armDownrangeGuidance(
     launchAzimuth,
     turnStartAlt,
@@ -132,8 +136,6 @@ armDownrangeGuidance(
 ).
 logMessage("Downrange guidance online.", "online", TRUE, FALSE, FALSE).
 
-armAltitudeDetonation(destructAlt, useRadarAlt).
-logMessage("Altitude safety detonator armed.", "warning", TRUE, FALSE, FALSE).
 //CLEARSCREEN.
 // =====================================================
 // HOLD PROGRAM OPEN

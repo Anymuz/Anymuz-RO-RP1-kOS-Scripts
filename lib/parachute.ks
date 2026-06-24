@@ -59,7 +59,7 @@ DECLARE FUNCTION armParachute {
             }.
             SET flightData["phase"] TO "chute".
             logMessage("Parachutes deployed.", "alert", TRUE, TRUE, TRUE).
-            outputFlightData().
+            //outputFlightData().
 
             // Touchdown: ship reports LANDED or SPLASHED. Final flight data dump.
             WHEN SHIP:STATUS = "LANDED" OR SHIP:STATUS = "SPLASHED" THEN {
