@@ -18,7 +18,7 @@ DECLARE FUNCTION armApogeeStaging {
     DECLARE PARAMETER triggerVelocity IS -1.
     DECLARE PARAMETER minAltitude IS 1000.
     DECLARE PARAMETER useRadarAlt IS FALSE.
-    DECLARE PARAMETER postApogeeDelay IS 0.
+    DECLARE PARAMETER postApogeeDelay IS 3.
     DECLARE PARAMETER markCoast IS FALSE.
 
     LOCAL staged IS FALSE.

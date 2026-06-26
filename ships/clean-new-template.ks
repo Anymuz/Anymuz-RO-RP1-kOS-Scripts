@@ -1,16 +1,12 @@
 // INITALIZATION
-// logMessage("Booting Bereshit R1 script, as it adapts for R2 configuration.", "system", TRUE, FALSE, TRUE).
-// RUNPATH("0:/ships/bereshit/Bereshit-R1.ks").
-
-LOCAL copyExisting IS "Bereshit-R1".
-logMessage("Booting " +copyExisting + " script, as it adapts for this configuration.", "system", TRUE, FALSE, TRUE).
-RUNPATH("0:/ships/" + shipSeries:TOLOWER() + "/" + copyExisting + ".ks").
+RUNONCEPATH("0:/programs/"+ shipSeries:TOLOWER() +".ks").
 // --------------------------------------------------------------
 
 // CONFIGUTION
 // --------------------------------------------------------------
 
 // STARTUP
+InitalizeProgram(). 
 // --------------------------------------------------------------
 
 // LAUNCH SEQUENCE
@@ -20,5 +16,5 @@ RUNPATH("0:/ships/" + shipSeries:TOLOWER() + "/" + copyExisting + ".ks").
 // --------------------------------------------------------------
 
 // HOLD PROGRAM
-// WAIT UNTIL FALSE.
+WAIT UNTIL FALSE.
 // --------------------------------------------------------------

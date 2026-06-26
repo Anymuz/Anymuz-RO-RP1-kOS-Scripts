@@ -1,4 +1,8 @@
+// INITALIZATION
 RUNONCEPATH("0:/programs/bmidbar.ks").
+// --------------------------------------------------------------
+
+// CONFIGURATION
 LOCAL countdownTime IS 10.
 LOCAL deployAlt IS 7000.
 LOCAL parachuteType IS "LR-PARACHUTE".  // Set this to the part tag for the parachute, used for parachute deployment checks, set to any non-existent tag if not using parachutes.
@@ -10,75 +14,26 @@ LOCAL clampReleaseTWR IS 1.3.
 LOCAL maxClampWait IS 5.
 LOCAL requirePropellantDrain IS FALSE.
 
-// Downrange guidance parameters.
-// LOCAL launchAzimuth IS 90.
-// LOCAL turnStartAlt IS 100.
-// LOCAL finalPitch IS 40.
-// LOCAL turnShape IS 1.25.
-// LOCAL turnEndAlt IS 45000.
-// LOCAL earlyControlAlt IS 1000.
-// LOCAL earlyMinPitch IS 78.
-// LOCAL guidanceEndAlt IS 90000.
-// LOCAL lockProgradeAfterGuidance IS TRUE.
-
+// LR2 guidance profile:
 LOCAL launchAzimuth IS 90.
-// LOCAL turnStartAlt IS 0.
-// LOCAL kickEndAlt IS 1000.
-// LOCAL turnEndAlt IS 35000.
-// LOCAL kickPitch IS 70.
-// LOCAL finalPitch IS 40.
-// LOCAL turnShape IS 0.85.
-// LOCAL guidanceEndAlt IS 70000.
-// LOCAL lockProgradeAfterGuidance IS FALSE.
-
-//  LOCAL launchAzimuth IS 90.
-//  Previous working profile:
 LOCAL turnStartAlt IS 0.
 LOCAL kickEndAlt IS 1000.
 LOCAL turnEndAlt IS 35000.
 LOCAL kickPitch IS 80.
 LOCAL finalPitch IS 40.
-LOCAL turnShape IS 1.
-//LOCAL turnShape IS 0.85.
+LOCAL turnShape IS 1.0.
 LOCAL guidanceEndAlt IS 90000.
-//LOCAL guidanceEndAlt IS 70000.
 LOCAL lockProgradeAfterGuidance IS FALSE.
+// --------------------------------------------------------------
 
-// Downrange sounding profile:
-// LOCAL turnStartAlt IS 0.
-// LOCAL kickEndAlt IS 1000.
-// LOCAL turnEndAlt IS 50000.
-// LOCAL kickPitch IS 75.
-// LOCAL finalPitch IS 30.
-// LOCAL turnShape IS 0.8.
-// LOCAL guidanceEndAlt IS 100000.
-// LOCAL lockProgradeAfterGuidance IS TRUE.
-
-// USE THIS IF ALL ELSE FAILS::
-// LOCAL turnStartAlt IS 0.
-// LOCAL kickEndAlt IS 1200.
-// LOCAL turnEndAlt IS 35000.
-// LOCAL kickPitch IS 82.
-// LOCAL finalPitch IS 42.
-// LOCAL turnShape IS 1.1.
-// LOCAL guidanceEndAlt IS 90000.
-// LOCAL lockProgradeAfterGuidance IS TRUE.
-
-// ================================
 // STARTUP
-// =====================================================
-RUNONCEPATH("0:/lib/parachute.ks").
 initalizeBmidbar(electricChargeLevel, shipVariant).
-
 logMessage("Bmidbar LR2 planetary reconnaissance loaded.", "mission", TRUE, FALSE, TRUE).
-logMessage("No booster stage configured for this vehicle.", "mission", TRUE, FALSE, TRUE).
 logMessage("Clamp release TWR target: " + clampReleaseTWR + ".", "mission", TRUE, FALSE, TRUE).
 skipLine().
+// --------------------------------------------------------------
 
-// =====================================================
 // LAUNCH SEQUENCE
-// =====================================================
-
 initializeLaunch().
 countdownLaunch(countdownTime).
 
@@ -96,11 +51,9 @@ IF NOT launchShipClampTWR(
     outputFlightData().
     WAIT UNTIL FALSE.
 }.
+// --------------------------------------------------------------
 
-// =====================================================
-// POST-LAUNCH SYSTEMS
-// =====================================================
-
+// POST-LAUNCH SYSTEMS:
 trackFlightStats().
 logMessage("Flight stats tracking online.", "online", TRUE, FALSE, FALSE).
 
@@ -113,7 +66,6 @@ monitorEngines(
     mainEngineStartThreshold
 ).
 logMessage("Engine monitoring active.", "online", TRUE, FALSE, FALSE).
-
 
 armParachute(
     parachuteType, 
@@ -135,10 +87,9 @@ armDownrangeGuidance(
     lockProgradeAfterGuidance
 ).
 logMessage("Downrange guidance online.", "online", TRUE, FALSE, FALSE).
-
 //CLEARSCREEN.
-// =====================================================
-// HOLD PROGRAM OPEN
-// =====================================================
+// --------------------------------------------------------------
 
+// HOLD PROGRAM
 WAIT UNTIL FALSE.
+// --------------------------------------------------------------

@@ -35,9 +35,7 @@ DECLARE FUNCTION startupMessage {
     DECLARE PARAMETER electricChargeLevel IS 0.
 
     logMessage("Electrics are LIVE, systems are now running on internal power.", "alert", TRUE, TRUE, TRUE).
-    // logMessage("Start launch ASAP to avoid excessive EC depletion.", "system", TRUE, FALSE, TRUE). // now Use luach clamp 
     logMessage("On startup this vehicle has: " +ROUND(electricChargeLevel, 2) + "KJ.", "system", TRUE, FALSE, TRUE).
-    //logMessage("Manually ensure EC level is sufficient before launch.", "system", TRUE, FALSE, TRUE). // Not needed
     skipLine().
     WAIT 0.5.
 }.
@@ -73,4 +71,24 @@ DECLARE FUNCTION outputFlightData {
     writeLogFile("--------------------------------------------------").
 
     logMessage("flight data output complete.", "info", TRUE, FALSE, FALSE).
+}.
+
+// Do not call this function directly, it is called by the ship specific script initalize function.
+DECLARE FUNCTION initalizeProgram {
+    IF electricChargeLevel <= 0 {
+        logMessage("No electrical power feed, check connections and battery levels.", "critical", TRUE, FALSE, TRUE).
+        logMessage("Operation impossible without power, possible false positive. Abort.", "critical", TRUE, TRUE, TRUE).
+        RETURN.
+    } 
+    ELSE {
+        WAIT 0.2.
+        logBreaker("New Misssion: " +  SHIP:NAME).
+        setLogToShipTime("MS", TRUE).
+        logMessage("Audio systems updating.", "system", TRUE, FALSE, TRUE).
+        armAlarmKeyStop(alarmStopKey).
+        logMessage("Initalizing onboard systems", "system", TRUE, FALSE, TRUE).
+        activateSystems().
+        startupMessage(electricChargeLevel).
+        WAIT 0.1.
+    }.
 }.
