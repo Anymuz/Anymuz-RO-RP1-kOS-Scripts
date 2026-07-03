@@ -1,3 +1,9 @@
+// EXPLAINATION
+// * Determines behaviour of solid boosters, depending on how launch is set up these either ignite
+// * Before main engine (Trigger A) or same time as it (Skip to Trigger B)
+// --------------------------------------------------------------
+
+// MAIN FUNCTION
 DECLARE FUNCTION armBoosterSeperation {
     DECLARE PARAMETER boosterTag IS "R103".
     DECLARE PARAMETER boosterFuelName IS "NGNC".
@@ -29,7 +35,7 @@ DECLARE FUNCTION armBoosterSeperation {
 
     WHEN TRUE THEN {  
         LOCAL boosterFuel IS sumPartResource(boosterTag, boosterFuelName).
-         // Main engine ignition and booster separation sequence.   
+        // Main engine ignition and booster separation sequence.   
         // Trigger A: light the main engine just before booster burnout (sequential flow only).
         IF flightData["phase"] = "booster" AND boosterFuel <= preigniteMainFuel  {
            SET flightData["phase"] TO "main".
@@ -53,3 +59,4 @@ DECLARE FUNCTION armBoosterSeperation {
         //WAIT UNTIL boosterSeparation.
     }.
 }.
+// --------------------------------------------------------------

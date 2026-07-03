@@ -1,3 +1,8 @@
+// EXPLAINATION
+// * For tracking and monitoring flight and engine
+// --------------------------------------------------------------
+
+// FUNCTIONS
 DECLARE FUNCTION trackFlightStats {
 
     // UNTIL flightData["descentCaptured"] {
@@ -126,3 +131,4 @@ DECLARE FUNCTION monitorEngines {
         PRESERVE.
     }.
 }.
+// --------------------------------------------------------------

@@ -1,10 +1,12 @@
-// 0:/lib/staging.ks
-// Event-driven staging triggers. Fires STAGE events off flight conditions.
-// Requires lib/logging.ks (logMessage) and a flightData LEXICON.
-// Designed to run alongside trackFlightStats, armBoosterSeperation,
-// armParachute and armAltitudeDetonation without fighting them for
-// control of flightData["phase"].
+// EXPLAINATION
+// * Event-driven staging triggers. Fires STAGE events off flight conditions.
+// * Requires lib/logging.ks (logMessage) and a flightData LEXICON.
+// * Designed to run alongside trackFlightStats, armBoosterSeperation,
+// * armParachute and armAltitudeDetonation without fighting them for
+// * control of flightData["phase"].
+// --------------------------------------------------------------
 
+// FUNCTIONS
 // Arms a one-shot stage event at apogee.
 // Apogee is declared on the first sustained negative vertical speed above
 // minAltitude, mirroring the descent detection used in tracking.ks/parachute.ks.
@@ -41,3 +43,4 @@ DECLARE FUNCTION armApogeeStaging {
         }.
     }.
 }.
+// --------------------------------------------------------------

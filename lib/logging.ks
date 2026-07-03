@@ -1,13 +1,17 @@
-// 0:/lib/logging.ks
+// EXPLAINATION
 // Logging utility functions.
+// --------------------------------------------------------------
 
+// INITALIZATION
 GLOBAL logConfig IS LEXICON().
 SET logConfig["timestamp"] TO TRUE.
 SET logConfig["timeStyle"] TO "DHMS".
 SET logConfig["writeFile"] TO TRUE.
 SET logConfig["logFile"] TO "archive:/logs/flightlog.txt".
 SET logConfig["startTime"] TO 0.
+// --------------------------------------------------------------
 
+// DISPLAY AND FORMAT FUNCTIONS
 // Pointless but makes code look nice lol
 DECLARE FUNCTION skipLine {
     DECLARE PARAMETER lines IS 1.
@@ -67,7 +71,9 @@ DECLARE FUNCTION formatTime {
 
     RETURN "" + totalSeconds.
 }.
+// --------------------------------------------------------------
 
+// LOGGING FUNCTIONS
 DECLARE FUNCTION getLogTime {
     RETURN TIME:SECONDS - logConfig["startTime"].
 }.
@@ -93,7 +99,7 @@ DECLARE FUNCTION buildLogLine {
     RETURN output.
 }.
 
-
+// Write to a long-term log file
 DECLARE FUNCTION writeLogFile {
     DECLARE PARAMETER line.
 
@@ -101,7 +107,6 @@ DECLARE FUNCTION writeLogFile {
         LOG line TO logConfig["logFile"].
     }.
 }.
-
 
 DECLARE FUNCTION playLogSound {
     DECLARE PARAMETER messageType.
@@ -117,8 +122,7 @@ DECLARE FUNCTION playLogSound {
     } ELSE {
         RETURN.
     }.
-}.
-
+}. // Plays a sound if there is one for the message type
 
 DECLARE FUNCTION logMessage {
     DECLARE PARAMETER message.
@@ -141,6 +145,20 @@ DECLARE FUNCTION logMessage {
     writeLogFile(fileOutput).
 }.
 
+// This function helps the log file readability.
+DECLARE FUNCTION logBreaker {
+    DECLARE PARAMETER title IS "NEW LOG SESSION".
+
+    SET title TO title:TOUPPER().
+
+    writeLogFile(" ").
+    writeLogFile("--------------------------------------------------").
+    writeLogFile("--------------[" + title + "]--------------").
+    writeLogFile("--------------------------------------------------").
+    writeLogFile(" ").
+}.
+
+// TIMESTAMP FUNCTIONS
 DECLARE FUNCTION setLogToShipTime {
     DECLARE PARAMETER timeStyle IS "MS".
     DECLARE PARAMETER outputToConsole IS FALSE.
@@ -166,15 +184,4 @@ DECLARE FUNCTION setLogToLaunchTime {
     // Logged using launch elapsed time.
     logMessage("Launch time active", "log", TRUE, FALSE, outputToConsole).
 }.
-
-DECLARE FUNCTION logBreaker {
-    DECLARE PARAMETER title IS "NEW LOG SESSION".
-
-    SET title TO title:TOUPPER().
-
-    writeLogFile(" ").
-    writeLogFile("--------------------------------------------------").
-    writeLogFile("--------------[" + title + "]--------------").
-    writeLogFile("--------------------------------------------------").
-    writeLogFile(" ").
-}.
+// --------------------------------------------------------------

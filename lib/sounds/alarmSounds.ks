@@ -1,6 +1,9 @@
-// 0:lib/sounds/alarmSounds.ks
-// This file defines alarm sounds for various critical events, such as impending detonation or system failures. These sounds are intended to play until manually stopped.
+// EXPLAINATION:
+// * This library defines alarm sounds for various critical events, such as impending detonation or system failures. These sounds are intended to play until manually stopped.
+// --------------------------------------------------------------
 
+// ALARM TONES:
+// Alarm sound for imminent self destruction.
 DECLARE FUNCTION getDetonationAlarm {
     set detonationAlarm to LIST().
     // detonationAlarm:ADD(NOTE(900, 0.15, 0.15, 1)).
@@ -13,6 +16,7 @@ DECLARE FUNCTION getDetonationAlarm {
     RETURN detonationAlarm.
 }.
 
+// Alarm sound for critical warnings like engine failure.
 DECLARE FUNCTION getEngineFailureAlarm {
     set engineFailureAlarm to LIST().
     // engineFailureAlarm:ADD(NOTE(750, 0.12, 0.12, 1)).
@@ -24,3 +28,4 @@ DECLARE FUNCTION getEngineFailureAlarm {
     engineFailureAlarm:ADD(NOTE(450, 0.25, 0.25, 1)).
     RETURN engineFailureAlarm.
 }.
+// --------------------------------------------------------------

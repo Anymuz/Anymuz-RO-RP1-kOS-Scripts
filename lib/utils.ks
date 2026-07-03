@@ -1,3 +1,8 @@
+// EXPLAINATION
+// * Utility functions that are commonly shared across the scripts
+// --------------------------------------------------------------
+
+// RESOURCE AND PART COUNTING
 DECLARE FUNCTION sumPartResource {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER resourceName.
@@ -30,7 +35,9 @@ DECLARE FUNCTION countBoosterIgnitions {
 
     RETURN ignitedCount.
 }.
+// --------------------------------------------------------------
 
+// LOGGING AND CONSOLE OUTPUT
 DECLARE FUNCTION startupMessage {
     DECLARE PARAMETER electricChargeLevel IS 0.
 
@@ -38,8 +45,9 @@ DECLARE FUNCTION startupMessage {
     logMessage("On startup this vehicle has: " +ROUND(electricChargeLevel, 2) + "KJ.", "system", TRUE, FALSE, TRUE).
     skipLine().
     WAIT 0.5.
-}.
+}. // Standard message when system on ship is ready
 
+// Data dump mid flight
 DECLARE FUNCTION outputFlightData {
     logMessage("Outputting flight data.", "info", TRUE, FALSE, FALSE).
 
@@ -72,7 +80,9 @@ DECLARE FUNCTION outputFlightData {
 
     logMessage("flight data output complete.", "info", TRUE, FALSE, FALSE).
 }.
+// --------------------------------------------------------------
 
+// HIGHLY DEPENDEND FUNCTION - DO NOT CALL OUTSIDE SHIP SCRIPT
 // Do not call this function directly, it is called by the ship specific script initalize function.
 DECLARE FUNCTION initalizeProgram {
     IF electricChargeLevel <= 0 {
@@ -92,3 +102,4 @@ DECLARE FUNCTION initalizeProgram {
         WAIT 0.1.
     }.
 }.
+// --------------------------------------------------------------

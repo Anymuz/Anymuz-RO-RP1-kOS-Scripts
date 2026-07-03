@@ -1,6 +1,8 @@
-// 0:/lib/audio.ks
-// Library of functions to set up audio driver.
+// EXPLAINATION
+// * Library of functions to set up audio driver.
+// --------------------------------------------------------------
 
+// INITALIZATION
 SET audioInitialized TO FALSE.
 SET launchAudio TO FALSE.
 SET alertAudio TO FALSE.
@@ -10,8 +12,9 @@ GLOBAL alarmState IS LEXICON().
 SET alarmState["active"] TO FALSE.
 SET alarmState["name"] TO "".
 SET alarmState["stopTime"] TO 0.
+// --------------------------------------------------------------
 
-
+// SETUP FUNCTIONS
 DECLARE FUNCTION loadLaunchAudio {
     SET launchAudio TO GETVOICE(0).
     SET launchAudio:WAVE TO "SINE".
@@ -45,8 +48,9 @@ DECLARE FUNCTION checkAudioInitialized {
         RETURN TRUE.
     }.
 }.
+// --------------------------------------------------------------
 
-
+// ALARM LOGGING
 DECLARE FUNCTION logAlarmStarted {
     DECLARE PARAMETER alarmName.
     DECLARE PARAMETER duration IS 0.
@@ -80,7 +84,7 @@ DECLARE FUNCTION logAlarmStopped {
         SET alarmState["stopTime"] TO 0.
     }.
 }.
-
+// ------------------------------------------------------
 
 GLOBAL alarmStopKey IS "#".
 GLOBAL alarmStopKeyArmed IS FALSE.
@@ -109,24 +113,7 @@ DECLARE FUNCTION armAlarmKeyStop {
     logMessage("Alarm stop key armed. Press '" + alarmStopKey + "' to stop alarms.", "audio", TRUE, FALSE, TRUE).
 }.
 
-
-DECLARE FUNCTION stopAlarmAfter {
-    DECLARE PARAMETER seconds IS 5.
-
-    LOCAL stopTime IS TIME:SECONDS + seconds.
-
-    WHEN TRUE THEN {
-        IF NOT alarmState["active"] {
-            // Alarm was already manually stopped.
-        } ELSE IF TIME:SECONDS >= stopTime {
-            stopAlarmSound(FALSE).
-        } ELSE {
-            PRESERVE.
-        }.
-    }.
-}.
-
-
+// SOUNDS AND ALARMS
 DECLARE FUNCTION playCountdownSound {
     IF NOT checkAudioInitialized() RETURN.
     launchAudio:PLAY(getCountdownNote()).
@@ -192,8 +179,7 @@ DECLARE FUNCTION playEngineFailureAlarm {
         stopAlarmAfter(duration).
     }.
 }.
-
-
+                                                                                                                                                                                                                                                                                               x 
 DECLARE FUNCTION stopAlarmSound {
     DECLARE PARAMETER manualStop IS FALSE.
 
@@ -204,6 +190,25 @@ DECLARE FUNCTION stopAlarmSound {
 }.
 
 
+DECLARE FUNCTION stopAlarmAfter {
+    DECLARE PARAMETER seconds IS 5.
+
+    LOCAL stopTime IS TIME:SECONDS + seconds.
+
+    WHEN TRUE THEN {
+        IF NOT alarmState["active"] {
+            // Alarm was already manually stopped.
+        } ELSE IF TIME:SECONDS >= stopTime {
+            stopAlarmSound(FALSE).
+        } ELSE {
+            PRESERVE.
+        }.
+    }.
+}.
+// --------------------------------------------------------------
+
+// TESTING FUNCTIONS
+// testing the warning alarms
 DECLARE FUNCTION testAlertAudio {
     IF NOT checkAudioInitialized() RETURN.
     skipLine().
@@ -226,7 +231,7 @@ DECLARE FUNCTION testAlertAudio {
     skipLine().
 }.
 
-
+// Launch countdown time
 DECLARE FUNCTION testLaunchAudio {
     IF NOT checkAudioInitialized() RETURN.
 
@@ -246,7 +251,7 @@ DECLARE FUNCTION testLaunchAudio {
     skipLine().
 }.
 
-
+// Tests the currently use sounds:
 DECLARE FUNCTION testAlarms {
     DECLARE PARAMETER duration IS 3.
 
@@ -277,7 +282,7 @@ DECLARE FUNCTION testAlarms {
     skipLine().
 }.
 
-
+// Tests all audio if need be 
 DECLARE FUNCTION fullAudioTest {
     DECLARE PARAMETER alarmDuration IS 5.
 
@@ -299,8 +304,9 @@ DECLARE FUNCTION fullAudioTest {
     logMessage("Completed full audio test.", "test", TRUE, FALSE, TRUE).
     skipLine().
 }.
+// --------------------------------------------------------------
 
-
+// SETUP AND USEFUL FUNCTIONS
 DECLARE FUNCTION setupAudio {
     DECLARE PARAMETER stopAlarmKey IS "#". // Key to stop alarm sounds when they are playing, set in armAlarmKeyStop().
     DECLARE PARAMETER testAudio IS FALSE. // Set to true to run audio tests after setup.
@@ -339,3 +345,4 @@ DECLARE FUNCTION setupAudio {
 DECLARE FUNCTION bypassAudioSetup {
     SET audioInitialized TO TRUE.
 }.
+// --------------------------------------------------------------

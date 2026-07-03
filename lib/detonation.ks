@@ -1,3 +1,8 @@
+// EXPLAINATION
+// * Controls the safety auto-destruct feature on single-use rockets.
+// --------------------------------------------------------------
+
+// FUNCTIONS
 DECLARE FUNCTION altitudeDetonation {
     logmessage("below destruct altitude.", "info", TRUE, FALSE, TRUE).
     logmessage("Vehicle will self-destruct imminently.", "warning", TRUE, FALSE, TRUE).
@@ -5,7 +10,7 @@ DECLARE FUNCTION altitudeDetonation {
     WAIT 3.
     logMessage("Planned vehicle destruction occured.", "end", FALSE, FALSE, FALSE).
     ABORT ON.
-}.
+}. // Auto detonate before hitting ground
 
 DECLARE FUNCTION armAltitudeDetonation {
     // destructAlt -> sea-level altitude threshold unless useRadarAlt = TRUE
@@ -34,7 +39,7 @@ DECLARE FUNCTION armAltitudeDetonation {
             }.
         }.
     }.
-}.
+}. // Arms and waits to detect rocket falling
 
 DECLARE FUNCTION selfDestruct {
     DECLARE PARAMETER reason IS "UNKNOWN".
@@ -45,4 +50,5 @@ DECLARE FUNCTION selfDestruct {
     WAIT fuzeTime.
     logMessage("Rapid vehicle disassembly has occurred.", "end", FALSE, FALSE, FALSE).
     ABORT ON.
-}.
+}. // Does the self destruction.
+// --------------------------------------------------------------

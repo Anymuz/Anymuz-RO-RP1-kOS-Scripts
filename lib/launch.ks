@@ -1,6 +1,8 @@
-// =====================================================
-// INITIAL DOUBLE-IPHASE GNITION LAUNCH FUNCTIONS
-// =====================================================
+// EXPLAINATION
+// * Functions library to launch the vehicle
+// --------------------------------------------------------------
+
+// INITIAL DOUBLE-PHASE IGNITION LAUNCH FUNCTIONS
 DECLARE FUNCTION initializeLaunch {
     logMessage("Launch sequence standby. Press any key to proceed.", "standby", TRUE, FALSE, TRUE).
     TERMINAL:INPUT:GETCHAR().
@@ -76,11 +78,9 @@ DECLARE FUNCTION launchShip {
     SET flightData["phase"] TO "main". 
     logMessage("Liftoff! Simultaneous ignition completed.", "launch", TRUE, FALSE, TRUE).
 }.
+// --------------------------------------------------------------
 
-// =====================================================
 // CLAMP-HELD ENGINE LAUNCH FUNCTIONS
-// =====================================================
-
 DECLARE FUNCTION getTaggedEngineThrust {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -182,7 +182,6 @@ DECLARE FUNCTION checkClampHeldEngineHealth {
 
     RETURN TRUE.
 }.
-
 
 // Waits until engine is safe to release from launch clamp.
 // It confirms:
@@ -345,3 +344,4 @@ DECLARE FUNCTION launchShipClampTWR {
 
     RETURN TRUE.
 }.
+// --------------------------------------------------------------
