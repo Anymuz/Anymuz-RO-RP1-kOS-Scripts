@@ -1,5 +1,6 @@
 // LAUNCH PANEL
 // Launch command + countdown input. See docs/lib/gui/panels/launchPanel.md.
+RUNONCEPATH("0:/lib/launch.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildLaunchPanel {
@@ -61,4 +62,3 @@ DECLARE FUNCTION buildLaunchPanel {
 
     RETURN panel.
 }.
-

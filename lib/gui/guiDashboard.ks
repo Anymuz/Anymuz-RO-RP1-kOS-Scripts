@@ -30,18 +30,13 @@ DECLARE FUNCTION guiAddTab {
     guiLayout:ADD(row).
 }.
 
-// Populate guiLayout with the full shared-panel dashboard. Opt-in and heavier: it
-// loads every reusable panel, so only the generic fallback and quick tests use it.
-// Purpose-built families instead load and list just the panels they carry.
+// Populate guiLayout with the shared panels currently shipped by the toolkit.
+// Purpose-built families can replace this fallback with their own layout.
 DECLARE FUNCTION guiUseStandardLayout {
     RUNONCEPATH("0:/lib/gui/guiPanels.ks").
     guiResetLayout().
-    guiAddTab("FLIGHT",   LIST(buildTelemetryPanel@, buildFlightDataPanel@)).
-    guiAddTab("ENGINE",   LIST(buildEnginePanel@)).
-    guiAddTab("LAUNCH",   LIST(buildLaunchPanel@)).
     guiAddTab("RESOURCES", LIST(buildResourcesPanel@)).
-    guiAddTab("RECOVERY", LIST(buildRecoveryPanel@)).
-    guiAddTab("SYSTEMS",  LIST(buildSystemsPanel@, buildAutomationPanel@, buildControlsPanel@, buildAudioPanel@)).
+    guiAddTab("SCIENCE", LIST(buildSciencePanel@)).
 }.
 
 // Build the tabbed window from guiLayout. Each builder is called with its tab's

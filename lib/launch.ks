@@ -1,9 +1,28 @@
 // =====================================================
 // INITIAL DOUBLE-IPHASE GNITION LAUNCH FUNCTIONS
 // =====================================================
+GLOBAL launchCommanded IS FALSE.
+GLOBAL launchCommandPending IS FALSE.
+GLOBAL launchCountdown IS 10.
+
+DECLARE FUNCTION commandLaunch {
+    IF flightData["phase"] <> "prelaunch" {
+        logMessage("Launch command ignored: vehicle is no longer in prelaunch.", "warning", TRUE, FALSE, TRUE).
+        RETURN.
+    }.
+    IF launchCommanded {
+        RETURN.
+    }.
+
+    SET flightData["launchGeo"] TO SHIP:GEOPOSITION.
+    SET launchCommanded TO TRUE.
+    SET launchCommandPending TO TRUE.
+}.
+
 DECLARE FUNCTION initializeLaunch {
-    logMessage("Launch sequence standby. Press any key to proceed.", "standby", TRUE, FALSE, TRUE).
-    TERMINAL:INPUT:GETCHAR().
+    logMessage("Launch sequence standby. Press LAUNCH on the mission control panel to proceed.", "standby", TRUE, FALSE, TRUE).
+    WAIT UNTIL launchCommandPending.
+    SET launchCommandPending TO FALSE.
     WAIT 0.05.
     CLEARSCREEN.
     logMessage("User input detected", "action", TRUE, FALSE, FALSE).
@@ -12,7 +31,7 @@ DECLARE FUNCTION initializeLaunch {
 }.
 
 DECLARE FUNCTION countdownLaunch {
-    DECLARE PARAMETER seconds IS 10.
+    DECLARE PARAMETER seconds IS launchCountdown.
     CLEARSCREEN.
     logMessage("The launch can be aborted safely with CTRL+C.", "INFO", TRUE, FALSE, TRUE).
     logMessage("Doing so deactivates computer. 'REBOOT.' to restart.", "INFO", TRUE, FALSE, TRUE).
@@ -29,6 +48,7 @@ DECLARE FUNCTION countdownLaunch {
         PRINT "                                                                                                                          " AT(0,8).
     }.
     logMessage("Countdown complete.", "launch", TRUE, FALSE, FALSE).
+    SET launchCommanded TO FALSE.
 }.
 
 // Original simple launch function., just stages and puts logs to launchmode..

@@ -1,5 +1,6 @@
 // ENGINE PANEL
 // Live engine readouts (read-only). See docs/lib/gui/panels/enginePanel.md.
+RUNONCEPATH("0:/lib/resources.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildEnginePanel {

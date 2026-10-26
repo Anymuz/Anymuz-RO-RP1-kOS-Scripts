@@ -1,5 +1,7 @@
 // RECOVERY PANEL
 // Recovery status + ARM-guarded manual actions. See docs/lib/gui/panels/recoveryPanel.md.
+RUNONCEPATH("0:/lib/parachute.ks").
+RUNONCEPATH("0:/lib/detonation.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildRecoveryPanel {
@@ -35,7 +37,7 @@ DECLARE FUNCTION buildRecoveryPanel {
         guiAddArmedAction(panel, "Jettison Chute Fairing", { jettisonChuteFairing(). }).
     }.
     IF allowManualDestruct {
-        guiAddArmedAction(panel, "SELF DESTRUCT", { selfDestruct("GUI COMMAND", 3). }).
+        guiAddArmedAction(panel, "SELF DESTRUCT", { requestSelfDestruct("GUI COMMAND", 3). }).
     }.
 
     RETURN panel.

@@ -1,5 +1,6 @@
 // SYSTEMS PANEL
 // Systems health: power + alarm state (read-only). See docs/lib/gui/panels/systemsPanel.md.
+RUNONCEPATH("0:/lib/resources.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildSystemsPanel {

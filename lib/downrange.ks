@@ -1,5 +1,28 @@
 // 0:/lib/downrange.ks
 
+DECLARE FUNCTION downrangeDistance {
+    DECLARE PARAMETER launchPosition.
+    DECLARE PARAMETER currentPosition IS SHIP:GEOPOSITION.
+
+    LOCAL lat1 IS launchPosition:LAT.
+    LOCAL lat2 IS currentPosition:LAT.
+    LOCAL lonDelta IS currentPosition:LNG - launchPosition:LNG.
+    LOCAL cosine IS SIN(lat1) * SIN(lat2) + COS(lat1) * COS(lat2) * COS(lonDelta).
+    SET cosine TO clampValue(cosine, -1, 1).
+
+    RETURN SHIP:BODY:RADIUS * ARCCOS(cosine).
+}.
+
+DECLARE FUNCTION velocityMph {
+    DECLARE PARAMETER metersPerSecond.
+    RETURN metersPerSecond * 2.236936.
+}.
+
+DECLARE FUNCTION velocityKmh {
+    DECLARE PARAMETER metersPerSecond.
+    RETURN metersPerSecond * 3.6.
+}.
+
 // Uses early kick-turn guidance instead of slow altitude-only pitch-over.
 DECLARE FUNCTION clampValue {
     DECLARE PARAMETER value.

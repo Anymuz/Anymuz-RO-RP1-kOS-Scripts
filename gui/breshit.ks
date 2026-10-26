@@ -1,23 +1,38 @@
 // BRESHIT DASHBOARD
 // Series-specific GUI: Window layout, tabs, and relevent system panels. See docs/lib/gui/.
+RUNONCEPATH("0:/programs/breshit.ks").
 RUNONCEPATH("0:/lib/gui/gui.ks"). // Shared GUI toolkit (theme, core, automation, dashboard helpers).
+RUNONCEPATH("0:/lib/launch.ks").
+RUNONCEPATH("0:/lib/downrange.ks").
+RUNONCEPATH("0:/lib/resources.ks").
+RUNONCEPATH("0:/lib/science.ks").
+RUNONCEPATH("0:/lib/booster.ks").
+RUNONCEPATH("0:/lib/parachute.ks").
+RUNONCEPATH("0:/lib/detonation.ks").
 RUNONCEPATH("0:/lib/gui/panels/resourcesPanel.ks"). // Shared ship-wide resource overview panel.
 RUNONCEPATH("0:/lib/gui/panels/sciencePanel.ks"). // Experiment telemetry + dynamic science toggle panel.
 // --------------------------------------------------------------
 
-// Reset runtime inputs from immutable defaults owned by programs/breshit.ks.
+// Reset runtime inputs from configured defaults in programs/breshit.ks.
 GLOBAL userInputs IS LEXICON().
+GLOBAL breshitInputWidgets IS LEXICON().
 DECLARE FUNCTION resetBreshitDefaults {
-    SET userInputs["launchCountdown"] TO launchCountdownDefault.
-    SET userInputs["boosterPreigniteMainThreshold"] TO boosterPreigniteMainThreshold.
-    SET userInputs["ignitionSync"] TO ignitionSync.
-    SET userInputs["separationBoosterPercentage"] TO separationBoosterPercentage.
-    SET userInputs["remainingFuelPercentage"] TO remainingFuelPercentage.
-    SET userInputs["mainEngineStartThreshold"] TO mainEngineStartThreshold.
-    SET userInputs["destructAlt"] TO destructAlt.
-    SET userInputs["useRadarAlt"] TO useRadarAlt.
-    SET userInputs["hasManualDestruct"] TO hasManualDestruct.
-    SET userInputs["hasAutoDestruct"] TO hasAutoDestruct.
+    FOR key IN breshitDefaults:KEYS {
+        SET userInputs[key] TO breshitDefaults[key].
+    }.
+    SET launchCountdown TO userInputs["launchCountdown"].
+
+    FOR key IN breshitInputWidgets:KEYS {
+        LOCAL widget IS breshitInputWidgets[key].
+        IF key = "ignitionSync" OR key = "useRadarAlt" {
+            SET widget:PRESSED TO userInputs[key].
+        } ELSE {
+            SET widget:TEXT TO "" + userInputs[key].
+        }.
+    }.
+    IF breshitInputWidgets:HASKEY("boosterPreigniteMainThreshold") {
+        SET breshitInputWidgets["boosterPreigniteMainThreshold"]:ENABLED TO userInputs["ignitionSync"].
+    }.
 }.
 
 // Function to call the GUI with series-specific configuration. Called once after registering systems.
@@ -25,6 +40,11 @@ DECLARE FUNCTION startBreshitGui {
     DECLARE PARAMETER windowTitle IS shipName.
     DECLARE PARAMETER windowWidth IS guiConfig["width"].
     DECLARE PARAMETER refreshInterval IS guiConfig["refreshInterval"].
+
+    resetBreshitDefaults().
+    IF NOT flightData:HASKEY("launchGeo") {
+        SET flightData["launchGeo"] TO SHIP:GEOPOSITION.
+    }.
 
     // Define the tabs for the GUI window.
     LOCAL tabNames IS LIST("LAUNCH", "SCIENCE", "ENGINE", "RESOURCES", "SYSTEMS").
@@ -54,7 +74,10 @@ DECLARE FUNCTION buildBreshitLaunchPanel {
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "LAUNCH CONTROL").
-    guiAddButton(panel, "LAUNCH", commandLaunch@).
+    guiAddButton(panel, "LAUNCH", {
+        SET launchCountdown TO userInputs["launchCountdown"].
+        commandLaunch().
+    }).
     guiAddStatusRow(panel, "Mission Time", "berLaunchMet").
     guiAddStatusRow(panel, "Flight Status", "berLaunchPhase").
     guiAddStatusRow(panel, "Alert", "berLaunchAlert").
@@ -138,9 +161,15 @@ DECLARE FUNCTION buildBreshitEnginePanel {
     guiAddStatusRow(panel, "Attached", "berEngBoostAttached").
     guiAddStatusRow(panel, "Count", "berEngBoostCount").
     guiAddStatusRow(panel, "Output", "berEngBoostOut").
-    guiAddArmedAction(panel, "Emergency Booster Detach", {
-        STAGE.
-        logMessage("Emergency booster detach command sent.", "warning", TRUE, TRUE, TRUE).
+    LOCAL boosterDetachButton IS guiAddArmedAction(panel, "Emergency Booster Detach", {
+        IF SHIP:PARTSTAGGED(boosterType):LENGTH > 0 {
+            LOCAL detached IS jettisonTaggedBoosters(boosterDecouplerTag).
+            IF detached > 0 {
+                logMessage("Emergency booster decouplers activated: " + detached + ".", "warning", TRUE, TRUE, TRUE).
+            } ELSE {
+                logMessage("No tagged booster decouplers found.", "error", TRUE, FALSE, TRUE).
+            }.
+        }.
     }).
 
     guiSpacer(4, panel).
@@ -150,9 +179,15 @@ DECLARE FUNCTION buildBreshitEnginePanel {
     guiAddStatusRow(panel, "Flameout", "berEngFlame").
     guiAddStatusRow(panel, "Fuel", "berEngFuel").
     guiAddStatusRow(panel, "Output", "berEngMainOut").
-    guiAddArmedAction(panel, "Emergency Main Engine Ignite", {
-        STAGE.
-        logMessage("Emergency main engine ignition command sent.", "warning", TRUE, TRUE, TRUE).
+    LOCAL mainIgniteButton IS guiAddArmedAction(panel, "Emergency Main Engine Ignite", {
+        IF NOT taggedEnginesHaveIgnitionSignal(mainEngine) {
+            FOR engine IN SHIP:PARTSTAGGED(mainEngine) {
+                IF NOT engine:IGNITION {
+                    engine:ACTIVATE().
+                }.
+            }.
+            logMessage("Emergency main engine ignition command sent.", "warning", TRUE, TRUE, TRUE).
+        }.
     }).
     guiAddArmedAction(panel, "Emergency Main Engine Shutdown", {
         LOCK THROTTLE TO 0.
@@ -167,6 +202,8 @@ DECLARE FUNCTION buildBreshitEnginePanel {
         LOCAL mainThrust IS getTaggedEngineThrust(mainEngine).
         LOCAL mainMax IS getTaggedEngineMaxThrust(mainEngine).
         LOCAL mainPct IS 0.
+        SET boosterDetachButton:ENABLED TO boosterCount > 0.
+        SET mainIgniteButton:ENABLED TO countTaggedEngines(mainEngine) > 0 AND NOT taggedEnginesHaveIgnitionSignal(mainEngine).
 
         IF boosterMax > 0 {
             SET boosterPct TO ROUND(100 * boosterThrust / boosterMax, 0).
@@ -195,15 +232,16 @@ DECLARE FUNCTION buildBreshitSystemsPanel {
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "LAUNCH").
-    guiAddNumberField(panel, "Countdown (s)", userInputs["launchCountdown"], {
+    SET breshitInputWidgets["launchCountdown"] TO guiAddNumberField(panel, "Countdown (s)", userInputs["launchCountdown"], {
         PARAMETER newValue.
         SET userInputs["launchCountdown"] TO MAX(0, ROUND(newValue, 0)).
+        SET launchCountdown TO userInputs["launchCountdown"].
     }).
     guiSpacer(4, panel).
 
     guiAddHeading(panel, "BOOSTER / ENGINE").
     LOCAL preigniteField IS 0. // Set below; captured by the toggle so it can grey the field when ignition sync is off.
-    guiAddToggle(panel, "Sync Main Ignition To Booster Fuel", userInputs["ignitionSync"], {
+    SET breshitInputWidgets["ignitionSync"] TO guiAddToggle(panel, "Sync Main Ignition To Booster Fuel", userInputs["ignitionSync"], {
         PARAMETER isOn.
         SET userInputs["ignitionSync"] TO isOn.
         SET preigniteField:ENABLED TO isOn.
@@ -212,22 +250,23 @@ DECLARE FUNCTION buildBreshitSystemsPanel {
         PARAMETER newValue.
         SET userInputs["boosterPreigniteMainThreshold"] TO newValue.
     }).
+    SET breshitInputWidgets["boosterPreigniteMainThreshold"] TO preigniteField.
     SET preigniteField:ENABLED TO userInputs["ignitionSync"]. // Only editable when main ignition is synced to booster fuel.
-    guiAddNumberField(panel, "Booster Separation Fuel level (%)", userInputs["separationBoosterPercentage"], {
+    SET breshitInputWidgets["separationBoosterPercentage"] TO guiAddNumberField(panel, "Booster Separation Fuel level (%)", userInputs["separationBoosterPercentage"], {
         PARAMETER newValue.
         SET userInputs["separationBoosterPercentage"] TO newValue.
     }).
-    guiAddNumberField(panel, "Residual Cutoff Fuel %", userInputs["remainingFuelPercentage"], {
+    SET breshitInputWidgets["remainingFuelPercentage"] TO guiAddNumberField(panel, "Residual Cutoff Fuel %", userInputs["remainingFuelPercentage"], {
         PARAMETER newValue.
         SET userInputs["remainingFuelPercentage"] TO newValue.
     }).
-    guiAddNumberField(panel, "Ignition Grace (s)", userInputs["mainEngineStartThreshold"], {
+    SET breshitInputWidgets["mainEngineStartThreshold"] TO guiAddNumberField(panel, "Ignition Grace (s)", userInputs["mainEngineStartThreshold"], {
         PARAMETER newValue.
         SET userInputs["mainEngineStartThreshold"] TO newValue.
     }).
     guiSpacer(4, panel).
 
-    LOCAL manualDestructAllowed IS (hasManualDestruct OR hasAutoDestruct). // Auto-destruct implies the pilot can fire it too.
+    LOCAL manualDestructAllowed IS (userInputs["hasManualDestruct"] OR userInputs["hasAutoDestruct"]). // Auto-destruct implies the pilot can fire it too.
 
     guiAddHeading(panel, "ALARM").
     guiAddButton(panel, "Silence Alarm", stopAlarmSound@).
@@ -240,17 +279,17 @@ DECLARE FUNCTION buildBreshitSystemsPanel {
         guiSpacer(4, panel).
         guiAddHeading(panel, "DESTRUCT").
 
-        IF hasAutoDestruct {
-            guiAddNumberField(panel, "Destruct Alt (m)", userInputs["destructAlt"], {
+        IF userInputs["hasAutoDestruct"] {
+            SET breshitInputWidgets["destructAlt"] TO guiAddNumberField(panel, "Destruct Alt (m)", userInputs["destructAlt"], {
                 PARAMETER newValue.
                 SET userInputs["destructAlt"] TO newValue.
             }).
-            guiAddToggle(panel, "Use Radar Alt", userInputs["useRadarAlt"], {
+            SET breshitInputWidgets["useRadarAlt"] TO guiAddToggle(panel, "Use Radar Alt", userInputs["useRadarAlt"], {
                 PARAMETER isOn.
                 SET userInputs["useRadarAlt"] TO isOn.
             }).
         }.
-        guiAddArmedAction(panel, "SELF DESTRUCT", { selfDestruct("MANUAL INPUT", 3). }).
+        guiAddArmedAction(panel, "SELF DESTRUCT", { requestSelfDestruct("MANUAL INPUT", 3). }).
     }.
 
     RETURN panel.

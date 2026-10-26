@@ -21,6 +21,27 @@
 // DEBUG / DISCOVERY
 // =====================================================
 
+DECLARE FUNCTION jettisonChuteFairing {
+    DECLARE PARAMETER fairingTag IS "CHUTE-CASE".
+
+    LOCAL fairings IS SHIP:PARTSTAGGED(fairingTag).
+    LOCAL jettisoned IS 0.
+    FOR fairing IN fairings {
+        IF fairing:HASMODULE("ModuleDecouple") OR fairing:HASMODULE("ModuleAnchoredDecoupler") {
+            fairing:DECOUPLE().
+            SET jettisoned TO jettisoned + 1.
+        }.
+    }.
+
+    IF jettisoned = 0 {
+        logMessage("No tagged chute fairing decouplers found.", "warning", TRUE, FALSE, TRUE).
+        RETURN FALSE.
+    }.
+
+    logMessage("Chute fairing jettison command sent.", "warning", TRUE, TRUE, TRUE).
+    RETURN TRUE.
+}.
+
 // Prints every module, event, action, and field on parts tagged chuteTag.
 // Run this ONCE in simulation to discover the exact names RealChute exposes
 // on your build/version. The defaults in the other functions below match the

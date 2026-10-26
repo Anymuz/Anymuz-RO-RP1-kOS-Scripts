@@ -619,15 +619,13 @@ window composition themselves.
 Breshit is a good example of customizing the GUI without modifying the shared GUI
 framework.
 
-`gui/breshit.ks` defines `startBreshitGui()`, plus Breshit's unique panels
-`buildBreshitTuningPanel` and `buildBreshitDestructPanel`. The family program
-`programs/breshit.ks` loads that file with `RUNONCEPATH`.
+`gui/breshit.ks` defines `startBreshitGui()` and Breshit's launch, engine, and
+systems panels. The defaults provider is `programs/breshit.ks`.
 `startBreshitGui()`:
 
-- sets family-specific GUI config
-- decides which tabs exist for the current variant
-- builds common shared panels into those tabs
-- adds family-specific tuning and destruct panels
+- resets the `userInputs` lexicon from `breshitDefaults`
+- establishes the launch-origin position before the first telemetry refresh
+- builds launch, science, engine, resources, and systems tabs
 - shows the window and arms the refresh timer
 
 That is exactly where this kind of customization belongs: not in the shared GUI
@@ -641,48 +639,51 @@ This is the best concrete example to follow while reading the code.
 
 ### Startup
 
-`ships/breshit/Breshit-R1.ks` runs and does the following:
+The family startup should:
 
-1. loads `programs/breshit.ks`
-2. calls `initalizeProgram()`
-3. loads `lib/gui/gui.ks`
-4. seeds `launchCountdown`
-5. seeds `guiParams["destructAlt"]`
-6. seeds `guiParams["useRadarAlt"]`
-7. registers Breshit automation systems
-8. starts the Breshit GUI
+1. load `programs/breshit.ks` for the default input values
+2. load `gui/breshit.ks` and its shared library dependencies
+3. call `resetBreshitDefaults()` before registering systems that read `userInputs`
+4. register the Breshit automation systems
+5. call `startBreshitGui()`
 
 At this point, the ship has both flight libraries and a live GUI.
 
 ### GUI binding
 
-Inside the family dashboard file `gui/breshit.ks`, `buildBreshitDestructPanel()`
-binds two GUI controls:
+`buildBreshitSystemsPanel()` binds the destruct controls to the same `userInputs`
+lexicon populated from `breshitDefaults`:
 
-- `guiAddParamField(panel, "Safe Destruct Alt (m)", guiParams, "destructAlt")`
-- `guiAddParamToggle(panel, "Use Radar Altitude", guiParams, "useRadarAlt")`
+- `userInputs["destructAlt"]`
+- `userInputs["useRadarAlt"]`
 
-These controls do not create their own separate data. They edit the same keys the
-ship seeded earlier.
+These keys are initialized before panel construction, so each field displays the
+active value and edits the value read by the registered action.
 
 ### System registration
 
-Still inside the family program, `registerBreshitSystems()` registers a
-`Destruct` automation system for variants that support auto-destruct.
+The family program registers a `Destruct` automation system for variants that
+support auto-destruct. The third `registerSystem()` parameter selects its
+register-time MANUAL mode:
 
-Its registered action captures the same `guiParams` keys when arming the system.
+```ks
+registerSystem("Destruct", {
+    armAltitudeDetonation(userInputs["destructAlt"], userInputs["useRadarAlt"]).
+}, FALSE). // Pass TRUE to register the system in MANUAL mode
+```
 
 ### Post-launch
 
 After launch, the ship script calls `autoArmSystems()`.
 
-That walks through the registered systems and arms them. If the pilot later flips
-Destruct to MANUAL in the GUI, the automatic action should respect that and hold
-rather than fire.
+That walks through the registered systems and arms them. MANUAL mode is set when
+the system is registered; the live Breshit dashboard does not provide an
+in-flight automation-mode switch. Automatic destruct checks that registered mode
+before it can fire.
 
 The result is a clean multi-layer flow:
 
-- ship owns the initial values
+- `programs/breshit.ks` owns the default values
 - the family dashboard exposes them
 - family program registers the behavior
 - shared automation layer stores the system state

@@ -1,3 +1,18 @@
+DECLARE FUNCTION jettisonTaggedBoosters {
+    DECLARE PARAMETER decouplerTag.
+
+    LOCAL decouplers IS SHIP:PARTSTAGGED(decouplerTag).
+    LOCAL detached IS 0.
+    FOR decoupler IN decouplers {
+        IF decoupler:HASMODULE("ModuleDecouple") OR decoupler:HASMODULE("ModuleAnchoredDecoupler") {
+            decoupler:DECOUPLE().
+            SET detached TO detached + 1.
+        }.
+    }.
+
+    RETURN detached.
+}.
+
 DECLARE FUNCTION armBoosterSeperation {
     DECLARE PARAMETER boosterTag IS "R103".
     DECLARE PARAMETER boosterFuelName IS "NGNC".

@@ -52,7 +52,9 @@ DECLARE FUNCTION buildAutomationPanel {
     // Master switch: take (or release) manual control of everything at once.
     guiAddToggle(panel, "MANUAL CONTROL (ALL)", FALSE, {
         PARAMETER isOn.
-        setAllSystemsManual(isOn).
+        FOR sys IN guiSystems {
+            SET sys["manual"] TO isOn.
+        }.
         FOR box IN manualBoxes {
             SET box:PRESSED TO isOn.
         }.

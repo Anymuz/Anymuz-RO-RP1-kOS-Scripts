@@ -1,5 +1,6 @@
 // AUDIO PANEL
 // Audio test bench. See docs/lib/gui/panels/audioPanel.md.
+RUNONCEPATH("0:/lib/audio.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildAudioPanel {
@@ -9,10 +10,10 @@ DECLARE FUNCTION buildAudioPanel {
     guiAddHeading(panel, "AUDIO TEST").
 
     LOCAL testRow IS panel:ADDHLAYOUT().
-    guiAddButton(testRow, "Alerts", testAlertAudio@).
-    guiAddButton(testRow, "Launch", testLaunchAudio@).
-    guiAddButton(testRow, "Alarms", testAlarms@).
-    guiAddButton(testRow, "Full", fullAudioTest@).
+    guiAddButton(testRow, "Alerts", { requestAudioTest("alerts"). }).
+    guiAddButton(testRow, "Launch", { requestAudioTest("launch"). }).
+    guiAddButton(testRow, "Alarms", { requestAudioTest("alarms"). }).
+    guiAddButton(testRow, "Full", { requestAudioTest("full", 5). }).
 
     LOCAL toneRow IS panel:ADDHLAYOUT().
     guiAddButton(toneRow, "Alert", playAlertSound@).
