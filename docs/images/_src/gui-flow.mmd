@@ -1,0 +1,36 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+sequenceDiagram
+    autonumber
+    participant Ship as ship / program
+    participant Dash as guiDashboard
+    participant Core as guiCore
+    participant Panel as panel builder
+    participant KOS as kOS GUI runtime
+    participant State as flightData / SHIP
+
+    Ship->>Dash: startDashboard(shipName)
+    Dash->>Core: createGuiWindow(title, width)
+    Core->>KOS: GUI(width) + logo + title
+    Dash->>Core: guiAddTabs(window, tabNames)
+    loop each row in guiLayout
+        Dash->>Panel: buildXxxPanel(tabBox)
+        Panel->>Core: guiAddStatusRow / guiAddButton / ...
+        Core->>KOS: ADDVBOX / ADDLABEL / ADDBUTTON
+        Panel->>Core: registerUpdater(delegate)
+    end
+    Dash->>Core: showGui()
+    Core->>KOS: window:SHOW()
+    Dash->>Core: armGuiRefresh(interval)
+    Core->>KOS: install one WHEN trigger
+
+    loop every interval while visible
+        KOS->>Core: trigger fires -> refreshGui()
+        Core->>Panel: updater:CALL()
+        Panel->>State: read flightData / SHIP
+        Panel->>Core: setWidgetText(name, value)
+        Core->>KOS: Label:TEXT = value
+    end
+
+    Note over KOS,Panel: user clicks a button
+    KOS->>Panel: ONCLICK delegate fires
+    Panel->>State: call library action (e.g. outputFlightData)

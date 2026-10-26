@@ -1,5 +1,5 @@
 // INITALIZATION
-LOCAL copyExisting IS "Bereshit-R1".
+LOCAL copyExisting IS "Breshit-R1".
 logMessage("Booting " +copyExisting + " script, as it adapts for this configuration.", "system", TRUE, FALSE, TRUE).
 RUNPATH("0:/ships/" +shipSeries:TOLOWER() +"/" + copyExisting + ".ks").
 

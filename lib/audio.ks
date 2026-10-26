@@ -179,7 +179,7 @@ DECLARE FUNCTION playEngineFailureAlarm {
         stopAlarmAfter(duration).
     }.
 }.
-                                                                                                                                                                                                                                                                                               x 
+ 
 DECLARE FUNCTION stopAlarmSound {
     DECLARE PARAMETER manualStop IS FALSE.
 

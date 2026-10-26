@@ -6,13 +6,18 @@
 // MAIN FUNCTION
 DECLARE FUNCTION armBoosterSeperation {
     DECLARE PARAMETER boosterTag IS "R103".
-    DECLARE PARAMETER boosterFuelName IS "NGNC".
-    DECLARE PARAMETER preigniteMainFuel IS 3.
-    DECLARE PARAMETER boosterShutdownFuel IS 0.2.
+    DECLARE PARAMETER separatorTag IS "TR-8A".
+    DECLARE PARAMETER mainEngineTag IS "U-1250".
+    DECLARE PARAMETER preigniteMainThreshold IS 40.
+    DECLARE PARAMETER separationBoosterPercentage IS 3.9.
 
     LOCAL boosterSeparation IS FALSE.
     LOCAL totalBoosters IS SHIP:PARTSTAGGED(boosterTag):LENGTH.
-    LOCAL boosterSeparationLevel IS boosterShutdownFuel * 1.5. // 1.5x shutdown to prevent dry separation instability.
+    //LOCAL boosterSeparationThreshold IS separationBoosterPercentage.// * 1.5. // 1.5x shutdown to prevent dry separation instability.
+
+    // Resolved ahead of time so Trigger B has nothing but DOACTION calls left to do -
+    // same straggler problem as engine ignition (see igniteResolvedModules), just for decouple.
+    LOCAL separatorModules IS resolveTaggedActionModules(separatorTag, "decouple").
 
     // Respect the phase set by the launch function:
     // "main"  -> launchShip already lit main engine + boosters together; skip Trigger A (main ignition).
@@ -34,20 +39,21 @@ DECLARE FUNCTION armBoosterSeperation {
     }.
 
     WHEN TRUE THEN {  
-        LOCAL boosterFuel IS sumPartResource(boosterTag, boosterFuelName).
+        LOCAL boosterPercent IS getResourcePercent("", boosterTag). // Booster fuel fill % found by tag; no resource name needed.
         // Main engine ignition and booster separation sequence.   
         // Trigger A: light the main engine just before booster burnout (sequential flow only).
-        IF flightData["phase"] = "booster" AND boosterFuel <= preigniteMainFuel  {
+        IF flightData["phase"] = "booster" AND boosterPercent <= preigniteMainThreshold  {
            SET flightData["phase"] TO "main".
             logMessage("Main engine ignition.", "alert", TRUE, FALSE, TRUE).
-            STAGE.
+            // Ignite by part tag rather than STAGE so this fires regardless of stage order.
+            LOCAL mainIgnitionModules IS resolveTaggedActionModules(mainEngineTag, "activate engine").
+            igniteResolvedModules(mainIgnitionModules, "activate engine").
         }.
 
         // Trigger B: drop spent boosters once fuel is below the safe-separation threshold.
-        IF flightData["phase"] = "main" AND boosterFuel <= boosterSeparationLevel {
+        IF flightData["phase"] = "main" AND boosterPercent <= separationBoosterPercentage {
             logMessage("Booster separation.", "alert", TRUE, FALSE, TRUE).
-            //WAIT UNTIL STAGE:READY.
-            STAGE.
+            igniteResolvedModules(separatorModules, "decouple").
             SET boosterSeparation TO TRUE.
             logMessage("Boosters separated.", "warning", TRUE, TRUE, TRUE).
         }.

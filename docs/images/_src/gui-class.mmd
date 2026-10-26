@@ -1,0 +1,100 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+classDiagram
+    class GuiTheme {
+        +file guiTheme_ks
+        +guiTheme LEXICON
+        +colorText(text, colorHex)
+        +boldText(text)
+        +sizeText(text, fontSize)
+        +titleText(text)
+        +headingText(text)
+        +statusColor(statusKey)
+        +statusText(text, statusKey)
+    }
+    class GuiCore {
+        +file guiCore_ks
+        +guiConfig LEXICON
+        +guiParams LEXICON
+        +guiState LEXICON
+        +createGuiWindow(title, width)
+        +showGui() hideGui() disposeGui()
+        +registerWidget(name, widget)
+        +setWidgetText(name, text)
+        +registerUpdater(delegate)
+        +guiAddHeading(box, text)
+        +guiAddStatusRow(box, caption, name, initial)
+        +guiAddButton(box, text, onClick)
+        +guiAddToggle(box, text, on, onToggle)
+        +guiAddArmedAction(box, label, onFire)
+        +guiAddTextField(box, caption, text, onConfirm)
+        +guiAddNumberField(box, caption, value, onConfirm)
+        +guiAddParamField(box, caption, lex, key)
+        +guiAddParamToggle(box, caption, lex, key)
+        +guiAddTabs(box, tabNames)
+        +guiAddImage(box, path, w, h)
+        +guiSpacer(size, box)
+        +refreshGui()
+        +armGuiRefresh(interval)
+        +disarmGuiRefresh()
+    }
+    class GuiAutomation {
+        +file guiAutomation_ks
+        +guiSystems LIST
+        +registerSystem(name, action, manual)
+        +findSystem(name)
+        +armSystem(name)
+        +autoArmSystems()
+    }
+    class GuiPanels {
+        +file guiPanels_ks
+        +RUNONCEPATH panels/*
+    }
+    class Panels {
+        +file panels/*_ks
+        +buildTelemetryPanel(box)
+        +buildFlightDataPanel(box)
+        +buildEnginePanel(box)
+        +buildSystemsPanel(box)
+        +buildLaunchPanel(box)
+        +buildRecoveryPanel(box)
+        +buildAutomationPanel(box)
+        +buildAudioPanel(box)
+        +buildControlsPanel(box)
+    }
+    class GuiDashboard {
+        +file guiDashboard_ks
+        +guiLayout LIST
+        +guiResetLayout()
+        +guiAddTab(tabName, builders)
+        +buildDashboard(title, width)
+        +startDashboard(title, interval)
+        +stopDashboard()
+    }
+    class GuiState {
+        +window
+        +created
+        +visible
+        +widgets LEXICON
+        +updaters LIST
+        +refreshArmed
+        +nextRefresh
+    }
+    class FlightSoftware {
+        +flightData LEXICON
+        +alarmState LEXICON
+        +SHIP
+        +outputFlightData()
+        +sumPartResource() arm...()
+        +getLogTime() logMessage()
+    }
+
+    GuiDashboard --> GuiPanels : composes panels
+    GuiDashboard --> GuiCore : lifecycle + refresh
+    GuiPanels --> Panels : RUNONCEPATH
+    Panels --> GuiCore : factories + registry
+    Panels --> GuiAutomation : automation panel
+    Panels ..> GuiTheme : formatting
+    Panels ..> FlightSoftware : read state / actions
+    GuiAutomation ..> FlightSoftware : arm actions
+    GuiCore --> GuiState : manages
+    GuiCore ..> GuiTheme : styled factories
