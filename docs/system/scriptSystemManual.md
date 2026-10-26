@@ -609,22 +609,13 @@ belongs on a recovery-oriented panel, not in a catch-all bucket.
 This is the generic tabbed dashboard layer.
 
 It defines a layout as data and can build a standard dashboard automatically.
-Some ships can use it directly. Others, such as Breshit, can build a custom
-window composition themselves.
+Some ships can use it directly. Others can build a custom window composition.
 
 ### Family-specific GUI composition
 
-Breshit is a good example of customizing the GUI without modifying the shared GUI
-framework.
-
-`gui/breshit.ks` defines `startBreshitGui()` and Breshit's launch, engine, and
-systems panels, and owns the Breshit dashboard defaults.
-`startBreshitGui()`:
-
-- resets the `userInputs` lexicon from `breshitDefaults`
-- establishes the launch-origin position before the first telemetry refresh
-- builds launch, science, engine, resources, and systems tabs
-- shows the window and arms the refresh timer
+A family dashboard can define a `start<Family>Gui()` function and its own
+launch, engine, or systems panels. It can initialize family defaults, assemble
+the tabs needed by that family, and show the window with a refresh timer.
 
 That is exactly where this kind of customization belongs: not in the shared GUI
 engine, but in the family's own dashboard file that sits beside its program.
