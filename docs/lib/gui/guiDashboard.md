@@ -25,7 +25,7 @@ drives its lifecycle. This is the only GUI file a ship/program normally calls.
 ## Notes
 For a ship/series-specific dashboard, `RUNONCEPATH` only the panels that vehicle
 shows, then call `guiResetLayout()` and `guiAddTab(...)` per system, **before**
-`startDashboard`. A family dashboard file is the natural home for this (e.g.
-`gui/breshit.ks`). Load this stack after `lib/logging.ks`, `lib/utils.ks`,
+`startDashboard`. A family dashboard file under `gui/` is the natural home for
+this. Load this stack after `lib/logging.ks`, `lib/utils.ks`,
 `lib/resources.ks` (the RESOURCES panel needs `getResourceSummary`), and
 `lib/audio.ks`.

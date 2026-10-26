@@ -21,7 +21,7 @@ Launch sequencing. Two ignition styles are supported: a simultaneous main-engine
   - `FALSE` (simultaneous) - the first `STAGE` lights the main engine and boosters together; phase is set straight to `main` so `armBoosterSeperation` skips its main-engine ignition trigger.
   - `TRUE` (sequential) - the first `STAGE` lights only the boosters; phase is left at `booster` so `armBoosterSeperation`'s Trigger A ignites the main engine once booster fuel falls to `preigniteMainThreshold`.
 
-  The Breshit family exposes this as the `ignitionSync` global / runtime toggle; the SYSTEMS panel greys out the Preignite Main Fuel field when it is off. The legacy booster-first variant remains commented out at the top of the function for vehicles that need it back.
+  A family may expose this as an `ignitionSync` global or runtime toggle and use its SYSTEMS panel to enable or disable sequential ignition settings.
 
 ### Clamp-held tagged-engine helpers (pure)
 - `getTaggedEngineThrust(engineTag)` - sum of current thrust across tagged engines.
