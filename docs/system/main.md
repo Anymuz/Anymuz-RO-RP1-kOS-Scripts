@@ -8,6 +8,7 @@ First real script after boot. Initialises logging, derives ship identity from `S
 ## Imports
 - `0:/lib/logging.ks`
 - `0:/lib/utils.ks`
+- `0:/lib/resources.ks`
 - `0:/lib/audio.ks`
 - `0:/system/loadShip.ks` (run via `RUNPATH`)
 
