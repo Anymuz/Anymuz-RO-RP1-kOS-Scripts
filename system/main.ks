@@ -3,10 +3,12 @@
 RUNONCEPATH("0:/lib/logging.ks").
 logBreaker("Starting New Session").
 
+// Stores the ship name and splits it if follows the convention "Series-Variant".
 GLOBAL shipName IS SHIP:NAME. // Set this to the name of the ship, used for logging and telemetry messages.
 LOCAL shipNameParts IS shipName:SPLIT("-").
 GLOBAL shipSeries IS shipNameParts[0].
 
+// Determine the shipvariant (if any)
 IF shipNameParts:LENGTH > 1 {
     GLOBAL shipVariant IS shipNameParts[1].
 } ELSE {
@@ -30,10 +32,13 @@ SET flightData["descentCaptured"] TO FALSE.
 SET flightData["phase"] TO "prelaunch".
 SET flightData["maxApoapsis"] TO 0.
 SET flightData["maxApoapsisAlt"] TO 0.
+SET flightData["launchGeo"] TO SHIP:GEOPOSITION. // Launch site captured on the pad for downrange tracking.
 logMessage("Global state initialized.", "system", TRUE, FALSE, TRUE).
 
 // Import utils first to ensure helper functions are fully available.
 RUNONCEPATH("0:/lib/utils.ks").
+RUNONCEPATH("0:/lib/resources.ks").
+RUNONCEPATH("0:/lib/parts.ks").
 logMessage("Core function libraries loaded.", "system", TRUE, FALSE, TRUE).
 
 // Makes audio available for the ship 

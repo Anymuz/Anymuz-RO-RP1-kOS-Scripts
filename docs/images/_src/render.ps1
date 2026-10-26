@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Continue'
 $src  = $PSScriptRoot
 $out  = Join-Path $PSScriptRoot '..'
-$names = @('boot-flow','layer-class','mission-sequence')
+$names = @('boot-flow','layer-class','mission-sequence','gui-class','gui-flow','lib-class')
 
 Add-Type -AssemblyName System.Drawing
 

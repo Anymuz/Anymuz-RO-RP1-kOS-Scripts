@@ -62,7 +62,7 @@ The guidance runs in three altitude bands, all measured as sea-level `ALTITUDE`:
 The defaults are tuned for a small kerolox sounding rocket on RSS. Change them per vehicle. A few starting points:
 
 ### Vertical sounding rocket (no downrange)
-Don't arm `armDownrangeGuidance` at all. Let the ship hold UP via `LOCK STEERING TO UP.` from `launchShip` and skip the call. This is what `Bereshit-R1` does on the Anymuz-Personal branch.
+Don't arm `armDownrangeGuidance` at all. Let the ship hold UP via `LOCK STEERING TO UP.` from `launchShip` and skip the call. This is what `Breshit-R1` does on the Anymuz-Personal branch.
 
 ### Downrange sounding rocket (small kerolox, RSS)
 ```
