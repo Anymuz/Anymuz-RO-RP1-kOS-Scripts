@@ -14,3 +14,6 @@ personal/
 # Misc
 Thumbs.db
 *.bak
+# Archived / legacy folders
+**/_[oO][lL][dD]/
+**/_[lL][eE][gG][aA][cC][yY]/
