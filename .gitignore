@@ -13,7 +13,6 @@ personal/
 
 # Branch-specific artefacts (legacy scripts, override files, snapshots).
 # Gitignored on both branches so local copies never get committed.
-# programs/breshit.ks
 # programs/bmidbar.ks
 # programs/bdmidbar.ks
 /_Legacy/
