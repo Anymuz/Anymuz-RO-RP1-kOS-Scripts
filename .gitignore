@@ -11,9 +11,13 @@ logs/*
 # Gitignored on both branches so local copies never get committed.
 personal/
 
+# Branch-specific artefacts (legacy scripts, override files, snapshots).
+# Gitignored on both branches so local copies never get committed.
+# programs/breshit.ks
+# programs/bmidbar.ks
+# programs/bdmidbar.ks
+/_Legacy/
+
 # Misc
 Thumbs.db
 *.bak
-# Archived / legacy folders
-**/_[oO][lL][dD]/
-**/_[lL][eE][gG][aA][cC][yY]/
