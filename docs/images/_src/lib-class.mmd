@@ -1,0 +1,75 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#000000','lineColor':'#333333'}}}%%
+flowchart TD
+    subgraph L1["Flight Control"]
+        direction TB
+        Booster["Booster"]
+        Launch["Launch"]
+        Detonation["Detonation"]
+    end
+
+    subgraph L2["Flight Control (cont.)"]
+        direction TB
+        Parachute["Parachute"]
+        Downrange["Downrange"]
+        Tracking["Tracking"]
+        Staging["Staging"]
+    end
+
+    subgraph L3["Shared Services"]
+        direction TB
+        Utils["Utils"]
+        Parts["Parts"]
+        Resources["Resources"]
+        Audio["Audio"]
+    end
+
+    subgraph L4["Foundation"]
+        direction TB
+        Logging["Logging"]
+        AlarmSounds["AlarmSounds"]
+    end
+
+    FlightData[("FlightData")]
+    Science[("Science")]
+
+    Booster --> Parts
+    Booster --> Utils
+    Booster --> Resources
+    Booster --> Detonation
+    Booster -.-> Logging
+    Booster -.-> FlightData
+
+    Launch --> Parts
+    Launch --> Resources
+    Launch --> Audio
+    Launch -.-> Logging
+    Launch -.-> FlightData
+
+    Detonation --> Audio
+    Detonation -.-> Logging
+    Detonation -.-> FlightData
+
+    Parachute --> Utils
+    Parachute -.-> Logging
+    Parachute -.-> FlightData
+
+    Downrange -.-> Logging
+
+    Tracking --> Resources
+    Tracking --> Audio
+    Tracking -.-> Logging
+    Tracking -.-> FlightData
+
+    Staging -.-> Logging
+    Staging -.-> FlightData
+
+    Utils --> Logging
+    Utils --> Audio
+    Utils -.-> FlightData
+
+    Parts -.-> Logging
+    Audio --> AlarmSounds
+    Audio -.-> Logging
+
+    style Science fill:#fffbe6,stroke:#999
+    style FlightData fill:#e6f7ff,stroke:#999
