@@ -9,7 +9,7 @@ GUI panel for recovery and safety: read-only status derived from `flightData`/
 ## Imports
 - `0:/lib/gui/guiCore.ks`
 - `0:/lib/gui/guiTheme.ks`
-- Guarded actions call `jettisonChuteFairing` (`lib/parachute.ks`) and `selfDestruct` (`lib/detonation.ks`).
+- Guarded actions call `jettisonChuteFairing` (`lib/parachute.ks`) and queue `requestSelfDestruct` (`lib/detonation.ks`).
 
 ## Globals declared
 - None.

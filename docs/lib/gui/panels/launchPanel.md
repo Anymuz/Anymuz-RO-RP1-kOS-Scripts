@@ -22,12 +22,12 @@ GUI-agnostic.
 ## Notes
 The button is a trigger, so it stays short: it only calls `commandLaunch()`, which
 sets `launchCommanded`. The existing `initializeLaunch()` in `lib/launch.ks` waits
-for either a keypress or that flag, so no ship-script changes are needed beyond
+for that flag, so no ship-script changes are needed beyond
 loading the GUI:
 
 ```
 startDashboard(shipName).
-initializeLaunch().   // released by a keypress OR the GUI LAUNCH button
+initializeLaunch().   // released by the GUI LAUNCH button
 countdownLaunch().    // uses launchCountdown (the slider value)
 launchShip().
 ```
@@ -37,4 +37,3 @@ lexicon, starts it on the rising edge of `launchCommanded`, and derives the coun
 from `launchCountdown`. Liftoff is detected from `flightData["phase"]` leaving
 `"prelaunch"`. Nothing is added to `lib/launch.ks` for the display - the panel
 observes existing state. See README Tutorial 11.
-

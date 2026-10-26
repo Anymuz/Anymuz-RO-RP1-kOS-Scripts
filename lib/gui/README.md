@@ -110,8 +110,11 @@ yourself first is always safe — nothing fires until the button is pressed whil
 ticked:
 
 ```ks
-guiAddArmedAction(panel, "SELF DESTRUCT", { selfDestruct("MANUAL INPUT", 3). }).
+guiAddArmedAction(panel, "SELF DESTRUCT", { requestSelfDestruct("MANUAL INPUT", 3). }).
 ```
+
+Use `requestSelfDestruct` for GUI callbacks. It queues a timed action without
+blocking other GUI callbacks during the fuze.
 
 ### Editable pilot input
 

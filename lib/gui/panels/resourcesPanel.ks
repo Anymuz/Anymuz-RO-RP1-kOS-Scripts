@@ -1,5 +1,6 @@
 // RESOURCES PANEL
 // Ship-wide resource overview for any vessel; reusable across ships. See docs/lib/gui/panels/resourcesPanel.md.
+RUNONCEPATH("0:/lib/resources.ks").
 // --------------------------------------------------------------
 
 DECLARE FUNCTION buildResourcesPanel {
@@ -8,6 +9,7 @@ DECLARE FUNCTION buildResourcesPanel {
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "RESOURCES").
 
+    refreshShipResources().
     LOCAL payloadNames IS LIST().
     LOCAL tankNames IS LIST().
     FOR resourceName IN shipResources:KEYS {

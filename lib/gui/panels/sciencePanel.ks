@@ -4,6 +4,7 @@
 //   assumed present. Pressing it is what triggers the one scan for the rest of
 //   the ship's experiments (their EVENT captions only load after an interaction).
 // * Depends on lib/gui/guiCore.ks, lib/gui/guiTheme.ks, lib/science.ks.
+RUNONCEPATH("0:/lib/science.ks").
 // --------------------------------------------------------------
 
 // Add one experiment's row: caption, ON/OFF status (registered under its own

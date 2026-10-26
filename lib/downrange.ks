@@ -1,8 +1,29 @@
-// EXPLAINATION
-// * This is the ascent guidance system for downrange rockets.
-// --------------------------------------------------------------
+// 0:/lib/downrange.ks
 
-// MATHEMATICAL FUNCTIONS
+DECLARE FUNCTION downrangeDistance {
+    DECLARE PARAMETER launchPosition.
+    DECLARE PARAMETER currentPosition IS SHIP:GEOPOSITION.
+
+    LOCAL lat1 IS launchPosition:LAT.
+    LOCAL lat2 IS currentPosition:LAT.
+    LOCAL lonDelta IS currentPosition:LNG - launchPosition:LNG.
+    LOCAL cosine IS SIN(lat1) * SIN(lat2) + COS(lat1) * COS(lat2) * COS(lonDelta).
+    SET cosine TO clampValue(cosine, -1, 1).
+
+    RETURN SHIP:BODY:RADIUS * ARCCOS(cosine).
+}.
+
+DECLARE FUNCTION velocityMph {
+    DECLARE PARAMETER metersPerSecond.
+    RETURN metersPerSecond * 2.236936.
+}.
+
+DECLARE FUNCTION velocityKmh {
+    DECLARE PARAMETER metersPerSecond.
+    RETURN metersPerSecond * 3.6.
+}.
+
+// Uses early kick-turn guidance instead of slow altitude-only pitch-over.
 DECLARE FUNCTION clampValue {
     DECLARE PARAMETER value.
     DECLARE PARAMETER minValue.
@@ -17,8 +38,9 @@ DECLARE FUNCTION clampValue {
     }.
 
     RETURN value.
-}. // Tries to hold the vehicle on calculated course
+}.
 
+// Calculates target pitch based on altitude and defined turn profile.
 DECLARE FUNCTION calculateDownrangePitch {
     DECLARE PARAMETER turnStartAlt IS 0.
     DECLARE PARAMETER kickEndAlt IS 300.
@@ -63,10 +85,9 @@ DECLARE FUNCTION calculateDownrangePitch {
     LOCAL targetPitch IS kickPitch - ((kickPitch - finalPitch) * curvedProgress).
 
     RETURN clampValue(targetPitch, finalPitch, 90).
-}. // Calculates target pitch based on altitude and defined turn profile.
-// --------------------------------------------------------------
+}.
 
-// CONSOLE LOGGING 
+// Logs the defined downrange guidance profile parameters.
 DECLARE FUNCTION logDownrangeProfile {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -89,11 +110,9 @@ DECLARE FUNCTION logDownrangeProfile {
     logMessage("Turn shape: " + turnShape + ".", "guidance", TRUE, FALSE, TRUE).
     logMessage("Guidance end altitude: " + guidanceEndAlt + "m.", "guidance", TRUE, FALSE, TRUE).
     logMessage("Prograde hold after guidance: " + lockProgradeAfterGuidance + ".", "guidance", TRUE, FALSE, TRUE).
-}. // Logs the defined downrange guidance profile parameters.
-// --------------------------------------------------------------
+}.
 
-// MAIN GUIDANCE FUNCTION
-// Arms the downrange guidance profile, applying calculated pitch targets and logging progress.
+//` Arms the downrange guidance profile, applying calculated pitch targets and logging progress.
 DECLARE FUNCTION armDownrangeGuidance {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -190,5 +209,4 @@ DECLARE FUNCTION armDownrangeGuidance {
             }.
         }.
     }.
-}. 
-// --------------------------------------------------------------
+}.
