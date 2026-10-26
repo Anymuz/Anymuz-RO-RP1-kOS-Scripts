@@ -1,6 +1,19 @@
 // BRESHIT DASHBOARD
 // Series-specific GUI: Window layout, tabs, and relevent system panels. See docs/lib/gui/.
-RUNONCEPATH("0:/programs/breshit.ks").
+GLOBAL breshitDefaults IS LEXICON(
+    "launchCountdown", 10,
+    "boosterPreigniteMainThreshold", 3,
+    "ignitionSync", TRUE,
+    "separationBoosterPercentage", 5,
+    "remainingFuelPercentage", 5,
+    "mainEngineStartThreshold", 3,
+    "destructAlt", 30000,
+    "useRadarAlt", FALSE,
+    "hasManualDestruct", TRUE,
+    "hasAutoDestruct", FALSE
+).
+GLOBAL boosterDecouplerTag IS "BOOSTER-DECOUPLER".
+
 RUNONCEPATH("0:/lib/gui/gui.ks"). // Shared GUI toolkit (theme, core, automation, dashboard helpers).
 RUNONCEPATH("0:/lib/launch.ks").
 RUNONCEPATH("0:/lib/downrange.ks").
@@ -13,7 +26,7 @@ RUNONCEPATH("0:/lib/gui/panels/resourcesPanel.ks"). // Shared ship-wide resource
 RUNONCEPATH("0:/lib/gui/panels/sciencePanel.ks"). // Experiment telemetry + dynamic science toggle panel.
 // --------------------------------------------------------------
 
-// Reset runtime inputs from configured defaults in programs/breshit.ks.
+// Reset runtime inputs from this dashboard's defaults.
 GLOBAL userInputs IS LEXICON().
 GLOBAL breshitInputWidgets IS LEXICON().
 DECLARE FUNCTION resetBreshitDefaults {

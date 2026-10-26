@@ -48,8 +48,8 @@ widgets live in `lib/gui/`, but the actual screen for a family is assembled in
 that family's own dashboard file. Think car brands: every dashboard is built from
 the same parts catalogue, but an Audi dash and a BMW dash are laid out for that
 car and expose controls only for what that car can do. `gui/breshit.ks` is
-Breshit's dashboard: it builds the tabs and filters panels with variant logic,
-and it sits as a sibling to `programs/breshit.ks`, not inside `lib/gui/`.
+Breshit's dashboard: it builds the tabs and filters panels with variant logic.
+Family dashboards live in `gui/`, separately from any family programs.
 
 ---
 
@@ -243,7 +243,7 @@ tabs a particular family shows. That composition is a program-layer decision
 
 Files:
 
-- `programs/breshit.ks` (family flight logic)
+- family program files, when provided
 - `gui/breshit.ks` (family dashboard: layout + that family's unique panels)
 - other family files in `programs/` and `gui/`
 
@@ -449,7 +449,7 @@ layers without mixing responsibilities.
 Core pieces:
 
 - `commandLaunch()` sets a flag used by GUI or action-based launch release.
-- `initializeLaunch()` waits for either a keypress or a launch command.
+- `initializeLaunch()` waits for a launch command.
 - `countdownLaunch()` performs the countdown and audio.
 - `launchShip()` actually stages and transitions the flight phase.
 
@@ -620,7 +620,7 @@ Breshit is a good example of customizing the GUI without modifying the shared GU
 framework.
 
 `gui/breshit.ks` defines `startBreshitGui()` and Breshit's launch, engine, and
-systems panels. The defaults provider is `programs/breshit.ks`.
+systems panels, and owns the Breshit dashboard defaults.
 `startBreshitGui()`:
 
 - resets the `userInputs` lexicon from `breshitDefaults`
@@ -641,11 +641,10 @@ This is the best concrete example to follow while reading the code.
 
 The family startup should:
 
-1. load `programs/breshit.ks` for the default input values
-2. load `gui/breshit.ks` and its shared library dependencies
-3. call `resetBreshitDefaults()` before registering systems that read `userInputs`
-4. register the Breshit automation systems
-5. call `startBreshitGui()`
+1. load `gui/breshit.ks` and its shared library dependencies
+2. call `resetBreshitDefaults()` before registering systems that read `userInputs`
+3. register the Breshit automation systems
+4. call `startBreshitGui()`
 
 At this point, the ship has both flight libraries and a live GUI.
 
@@ -683,7 +682,7 @@ before it can fire.
 
 The result is a clean multi-layer flow:
 
-- `programs/breshit.ks` owns the default values
+- `gui/breshit.ks` owns the dashboard default values
 - the family dashboard exposes them
 - family program registers the behavior
 - shared automation layer stores the system state
