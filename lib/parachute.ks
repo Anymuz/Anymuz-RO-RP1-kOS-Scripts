@@ -1,7 +1,9 @@
-// 0:/lib/parachute.ks
-// Jettisons the chute fairing then deploys parachutes at a given altitude.
-// Requires lib/logging.ks.
+// EXPLAINATION
+// * Jettisons the chute fairing then deploys parachutes at a given altitude.
+// * Requires lib/logging.ks.
+// --------------------------------------------------------------
 
+// FUNCTIONS
 // Jettisons every part tagged fairingTag using the ProceduralFairingDecoupler
 // "jettison" action (falls back to stock "jettison fairing" on ModuleProceduralFairing).
 DECLARE FUNCTION jettisonChuteFairing {
@@ -70,3 +72,4 @@ DECLARE FUNCTION armParachute {
         }.
     }.
 }.
+// --------------------------------------------------------------
