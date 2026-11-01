@@ -1,5 +1,5 @@
 // EXPLAINATION
-// * Library for all launch related audio tones.
+// Launch related audio tones.
 // --------------------------------------------------------------
 
 // SOUND NOTES

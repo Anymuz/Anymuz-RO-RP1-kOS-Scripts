@@ -1,7 +1,8 @@
-// FLIGHT DATA PANEL
-// Captured peak stats + log dump. See docs/lib/gui/panels/flightDataPanel.md.
+// EXPLAINATION
+// Peak flight stats and log dump button
 // --------------------------------------------------------------
 
+// Flight data panel
 DECLARE FUNCTION buildFlightDataPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

@@ -17,11 +17,11 @@ Launch sequencing. Two ignition styles are supported: a simultaneous main-engine
 - `countdownLaunch(seconds)` - on-screen countdown with a tone every second. `seconds` defaults to `launchCountdown`.
 
 ### Simple launch
-- `launchShip(syncIgnition)` - first-stage ignition. Sets `flightData["phase"]` to `prelaunch`, locks throttle and steering, calls `STAGE`, plays launch sound. `syncIgnition` (default FALSE) picks the ignition mode and **must match the craft's staging**:
-  - `FALSE` (simultaneous) - the first `STAGE` lights the main engine and boosters together; phase is set straight to `main` so `armBoosterSeperation` skips its main-engine ignition trigger.
-  - `TRUE` (sequential) - the first `STAGE` lights only the boosters; phase is left at `booster` so `armBoosterSeperation`'s Trigger A ignites the main engine once booster fuel falls to `preigniteMainThreshold`.
+- `launchShip(syncIgnition)` - ignition and clamp release by part tag (`boosterType`, `mainEngine`, `launchClamp` globals set by the ship program, never `STAGE`). Sets `flightData["phase"]` to `prelaunch`, locks throttle and steering, fires `activate engine` on the tagged engines together, fires `release clamp`, plays launch sound. `syncIgnition` (default FALSE) picks the ignition mode:
+  - `FALSE` (simultaneous) - main engine and boosters light together; phase is set straight to `main` so `armBoosterSeperation` skips its main-engine ignition trigger.
+  - `TRUE` (sequential) - only the boosters light; phase is left at `booster` so `armBoosterSeperation`'s Trigger A ignites the main engine once booster fuel falls to `preigniteMainThreshold`.
 
-  A family may expose this as an `ignitionSync` global or runtime toggle and use its SYSTEMS panel to enable or disable sequential ignition settings.
+  The Breshit family exposes this as the `ignitionSync` global / runtime toggle; the SYSTEMS panel greys out the Preignite Main Fuel field when it is off. The legacy booster-first variant remains commented out at the top of the function for vehicles that need it back.
 
 ### Clamp-held tagged-engine helpers (pure)
 - `getTaggedEngineThrust(engineTag)` - sum of current thrust across tagged engines.
@@ -34,7 +34,7 @@ Launch sequencing. Two ignition styles are supported: a simultaneous main-engine
 ### Clamp-held ignition flow
 - `checkClampHeldEngineHealth(engineTag, minimumThrust)` - lightweight prelaunch sanity check (engine present, no flameout). Returns FALSE on hard failures.
 - `waitForClampReleaseReadiness(engineTag, fuelTankTag, releaseTWR, maxClampWait, stableHoldTime, maxTWRDrop, requireFuelDrain, resourceCheckDelay)` - polls TWR and fuel drain after ignition. Fuel is read as a whole-tank total via `getResourceAmount("", fuelTankTag)` (see `lib/resources.ks`), so no resource names are needed. Aborts on flameout, thrust decay, missing fuel drain, or timeout. Returns TRUE when stable TWR is held for `stableHoldTime`.
-- `launchShipClampTWR(engineTag, fuelTankTag, releaseTWR, maxClampWait, launchAzimuth, requireFuelDrain)` - the full clamp-held sequence: ignition stage, readiness wait, clamp release. Returns FALSE on abort so the ship script can skip post-launch arming.
+- `launchShipClampTWR(engineTag, fuelTankTag, releaseTWR, maxClampWait, launchAzimuth, requireFuelDrain, clampTag)` - the full clamp-held sequence: tagged engine ignition (`activate engine`), readiness wait, clamp release (`release clamp` on `clampTag`, default the `launchClamp` global). Aborts and returns FALSE if no tagged engine exposes `activate engine`, or if the readiness checks fail, so the ship script can skip post-launch arming.
 
 ## Notes
 RO engines have ignition counts and ullage requirements. Validate the clamp release TWR and timeout in simulation before flying for career - the defaults are tuned for kerolox sounding rockets, not every engine.

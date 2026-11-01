@@ -1,7 +1,8 @@
-// ENGINE PANEL
-// Live engine readouts (read-only). See docs/lib/gui/panels/enginePanel.md.
+// EXPLAINATION
+// Live engine readouts
 // --------------------------------------------------------------
 
+// Engine panel for tagged engines
 DECLARE FUNCTION buildEnginePanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
     DECLARE PARAMETER engineTag IS guiConfig["engineTag"].

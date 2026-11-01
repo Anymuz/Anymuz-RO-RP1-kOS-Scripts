@@ -94,30 +94,30 @@ DECLARE FUNCTION initalizeProgram {
 // --------------------------------------------------------------
 
 // NAVIGATION AND DISTANCE
-// Great-circle (surface) distance between two GEOPOSITIONs along the body surface.
+// Surface distance between two ground points
 DECLARE FUNCTION greatCircleDistance {
     DECLARE PARAMETER fromGeo.
     DECLARE PARAMETER toGeo.
 
     LOCAL dLon IS toGeo:LNG - fromGeo:LNG.
 
-    // Clamp to [-1, 1]: identical/near points round just past 1.0 and make ARCCOS return NaN.
+    // Clamp, rounding past 1 makes ARCCOS return NaN
     LOCAL cosAngle IS SIN(fromGeo:LAT) * SIN(toGeo:LAT) +
                       COS(fromGeo:LAT) * COS(toGeo:LAT) * COS(dLon).
     SET cosAngle TO MAX(-1, MIN(1, cosAngle)).
 
-    // kOS trig takes degrees; ARCCOS returns degrees, so convert to radians for the arc length.
+    // ARCCOS gives degrees, arc length needs radians
     LOCAL centralAngle IS ARCCOS(cosAngle).
 
     RETURN BODY:RADIUS * centralAngle * CONSTANT:DEGTORAD.
-}. // Surface arc distance in metres between two ground points.
+}. // Metres
 
-// Downrange distance from a stored launch point to the ship's current ground track.
+// Distance from launch point to ship
 DECLARE FUNCTION downrangeDistance {
     DECLARE PARAMETER launchGeo.
 
     RETURN greatCircleDistance(launchGeo, SHIP:GEOPOSITION).
-}. // Metres downrange; capture launchGeo IS SHIP:GEOPOSITION once at launch.
+}. // Metres, launchGeo is set at launch
 
 // I am from the UK so I like this
 DECLARE FUNCTION metersIntoMiles {

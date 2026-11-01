@@ -1,8 +1,8 @@
-// PARAMS PANEL
-// DEPRECATED / UNUSED - editable inputs now live on each system's own panel; kept for reference.
-// See docs/lib/gui/panels/paramsPanel.md.
+// EXPLAINATION
+// Generic panel from a lexicon of params, unused now
 // --------------------------------------------------------------
 
+// Params panel
 DECLARE FUNCTION buildParamsPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
     DECLARE PARAMETER lexIn IS guiParams.

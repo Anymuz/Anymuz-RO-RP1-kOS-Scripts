@@ -23,7 +23,7 @@ At a high level it does five jobs:
 2. Work out which ship is currently loaded.
 3. Load the correct ship entry script for that vessel.
 4. Reuse shared libraries for launch, tracking, audio, logging, destruct,
-   parachutes, staging, and GUI.
+   parachutes, apogee events, and GUI.
 5. Keep ship-specific decisions near the ship while keeping reusable behavior in
    shared libraries.
 
@@ -34,8 +34,9 @@ That split is the main architectural idea of the whole repo:
 - `lib/` holds reusable capabilities, including the shared GUI toolkit in
   `lib/gui/` (widgets and shared panels only, not any one family's screen).
 - `programs/` defines a family of related ships and its flight logic.
-- `gui/` is reserved for family-specific dashboard files. It is empty in the
-  starter template; add a dashboard only when a family needs a custom screen.
+- `gui/` holds one dashboard file per family (for example `gui/breshit.ks`):
+  that family's window layout plus the panels unique to it, filtered by variant
+  logic. The family program loads it.
 - `ships/` defines one exact vessel and its startup GUI values.
 
 The GUI is important, but it is not the center of the architecture. The ship
@@ -46,9 +47,9 @@ Treat a family's dashboard the same way you treat its flight logic. The shared
 widgets live in `lib/gui/`, but the actual screen for a family is assembled in
 that family's own dashboard file. Think car brands: every dashboard is built from
 the same parts catalogue, but an Audi dash and a BMW dash are laid out for that
-car and expose controls only for what that car can do. A family dashboard builds
-the tabs and filters panels with variant logic. Family dashboards live in `gui/`,
-separately from any family programs.
+car and expose controls only for what that car can do. `gui/breshit.ks` is
+Breshit's dashboard: it builds the tabs and filters panels with variant logic,
+and it sits as a sibling to `programs/breshit.ks`, not inside `lib/gui/`.
 
 ---
 
@@ -110,7 +111,7 @@ Naming rule:
 
 Example:
 
-- `Family-R1` becomes `0:/ships/family/Family-R1.ks`
+- `Breshit-R1` becomes `0:/ships/breshit/Breshit-R1.ks`
 
 If the file exists, it is `RUNPATH`ed.
 If it does not exist, the system falls through to `system/failureInfo.ks`.
@@ -147,10 +148,10 @@ The family program sits between shared libraries and an individual ship.
 
 It is where common behavior for a class of vehicles lives.
 
-For a family, that includes:
+For Breshit, that includes:
 
 - importing the shared flight libraries
-- optionally loading a family dashboard file from `gui/`
+- loading the family dashboard file (`gui/breshit.ks`)
 - declaring family-wide globals
 - mapping variants to engine tags and destruct capabilities
 - registering armable systems for the GUI automation layer
@@ -242,8 +243,8 @@ tabs a particular family shows. That composition is a program-layer decision
 
 Files:
 
-- family program files, when provided
-- optional family dashboard files in `gui/`
+- `programs/breshit.ks` (family flight logic)
+- `gui/breshit.ks` (family dashboard: layout + that family's unique panels)
 - other family files in `programs/` and `gui/`
 
 Questions this layer answers:
@@ -262,7 +263,7 @@ dashboard for the same family and is loaded by the program.
 
 Files:
 
-- `ships/<family>/<ShipName>.ks`
+- `ships/breshit/Breshit-R1.ks`
 - other files under `ships/`
 
 Questions this layer answers:
@@ -355,7 +356,7 @@ Pattern:
 Example flow:
 
 - ship seeds `guiParams["destructAlt"]`
-- a destruct panel exposes that key on the RECOVERY tab
+- Breshit destruct panel exposes that key on the RECOVERY tab
 - system registration later reads `guiParams["destructAlt"]` when arming auto-destruct
 
 Important rule:
@@ -448,9 +449,9 @@ layers without mixing responsibilities.
 Core pieces:
 
 - `commandLaunch()` sets a flag used by GUI or action-based launch release.
-- `initializeLaunch()` waits for a launch command.
+- `initializeLaunch()` waits for either a keypress or a launch command.
 - `countdownLaunch()` performs the countdown and audio.
-- `launchShip()` actually stages and transitions the flight phase.
+- `launchShip()` fires the tagged part actions (engines, then clamp) and transitions the flight phase.
 
 Notice what this library does not know:
 
@@ -463,7 +464,7 @@ That is intentional.
 
 ### The ship script composes the mission
 
-In a ship's entry script, the mission decides to call:
+In a Breshit ship, the ship script decides to call:
 
 1. `initializeLaunch()`
 2. `countdownLaunch()`
@@ -496,10 +497,11 @@ So when you ask "where does this GUI decision live?", the answer is almost alway
 the same as for flight behavior: shared mechanism in `lib/gui/`, the actual family
 screen and its filtering in `gui/<family>.ks`, one-off values in the ship.
 
-When a family needs a custom dashboard, its GUI file can build a
-variant-appropriate tab list, add shared panels, conditionally add family-specific
-panels, and show only what each vehicle needs. The rest of this section describes
-the shared toolkit and how to compose a family dashboard.
+`startBreshitGui()` in `gui/breshit.ks` is the model to copy. It builds a
+variant-appropriate tab list, adds the shared panels, conditionally adds
+Breshit's own tuning and destruct panels, and shows only what that vehicle
+actually needs. The rest of this section walks the toolkit files first, then that
+family dashboard.
 
 ### `lib/gui/gui.ks`
 
@@ -609,70 +611,79 @@ belongs on a recovery-oriented panel, not in a catch-all bucket.
 This is the generic tabbed dashboard layer.
 
 It defines a layout as data and can build a standard dashboard automatically.
-Some ships can use it directly. Others can build a custom window composition.
+Some ships can use it directly. Others, such as Breshit, can build a custom
+window composition themselves.
 
 ### Family-specific GUI composition
 
-A family dashboard can define a `start<Family>Gui()` function and its own
-launch, engine, or systems panels. It can initialize family defaults, assemble
-the tabs needed by that family, and show the window with a refresh timer.
+Breshit is a good example of customizing the GUI without modifying the shared GUI
+framework.
+
+`gui/breshit.ks` defines `startBreshitGui()`, plus Breshit's unique panels
+`buildBreshitTuningPanel` and `buildBreshitDestructPanel`. The family program
+`programs/breshit.ks` loads that file with `RUNONCEPATH`.
+`startBreshitGui()`:
+
+- sets family-specific GUI config
+- decides which tabs exist for the current variant
+- builds common shared panels into those tabs
+- adds family-specific tuning and destruct panels
+- shows the window and arms the refresh timer
 
 That is exactly where this kind of customization belongs: not in the shared GUI
 engine, but in the family's own dashboard file that sits beside its program.
 
 ---
 
-## 8. A generic example from boot to post-launch automation
+## 8. A full Breshit example from boot to auto-destruct
 
-This example shows how the layers work together without depending on a
-ship-specific implementation.
+This is the best concrete example to follow while reading the code.
 
 ### Startup
 
-The family startup can:
+`ships/breshit/Breshit-R1.ks` runs and does the following:
 
-1. load the shared library dependencies it needs
-2. initialize family defaults before registering systems that read them
-3. register the automation systems supported by the family
-4. optionally build and show a family dashboard
+1. loads `programs/breshit.ks`
+2. calls `initalizeProgram()`
+3. loads `lib/gui/gui.ks`
+4. seeds `launchCountdown`
+5. seeds `guiParams["destructAlt"]`
+6. seeds `guiParams["useRadarAlt"]`
+7. registers Breshit automation systems
+8. starts the Breshit GUI
 
-At this point, the ship has its flight libraries and, if configured, a live GUI.
+At this point, the ship has both flight libraries and a live GUI.
 
 ### GUI binding
 
-An automation panel can bind editable controls to the same lexicon used by the
-system registration:
+Inside the family dashboard file `gui/breshit.ks`, `buildBreshitDestructPanel()`
+binds two GUI controls:
 
-- `guiParams["destructAlt"]`
-- `guiParams["useRadarAlt"]`
+- `guiAddParamField(panel, "Safe Destruct Alt (m)", guiParams, "destructAlt")`
+- `guiAddParamToggle(panel, "Use Radar Altitude", guiParams, "useRadarAlt")`
 
-Initialize these keys before panel construction so each field displays the
-active value and edits the value read by the registered action.
+These controls do not create their own separate data. They edit the same keys the
+ship seeded earlier.
 
 ### System registration
 
-The family program can register a `Destruct` automation system for vehicles that
-support auto-destruct. The third `registerSystem()` parameter selects its
-register-time MANUAL mode:
+Still inside the family program, `registerBreshitSystems()` registers a
+`Destruct` automation system for variants that support auto-destruct.
 
-```ks
-registerSystem("Destruct", {
-    armAltitudeDetonation(guiParams["destructAlt"], guiParams["useRadarAlt"]).
-}, FALSE). // Pass TRUE to register the system in MANUAL mode
-```
+Its registered action captures the same `guiParams` keys when arming the system.
 
 ### Post-launch
 
-After launch, the ship script can call `autoArmSystems()`.
+After launch, the ship script calls `autoArmSystems()`.
 
-That walks through the registered systems and arms them. MANUAL mode is set when
-the system is registered. Automatic destruct checks that registered mode before
-it can fire.
+That walks through the registered systems and arms them. If the pilot later flips
+Destruct to MANUAL in the GUI, the automatic action should respect that and hold
+rather than fire.
 
 The result is a clean multi-layer flow:
 
-- the ship or family initializes the dashboard values
-- the family dashboard exposes them, if one is configured
+- ship owns the initial values
+- the family dashboard exposes them
 - family program registers the behavior
 - shared automation layer stores the system state
 - shared destruct logic uses the selected values
@@ -704,7 +715,7 @@ Edit the family program in `programs/`.
 
 Examples:
 
-- which variants support auto-destruct
+- which Breshit variants support auto-destruct
 - which tabs appear for the family GUI
 - family-specific tuning panels
 - family-wide part tags or thresholds
@@ -740,7 +751,7 @@ Examples:
 
 - which tabs a family shows and in what order
 - which shared panels go on each tab
-- a panel unique to that family (for example mission tuning or destruct)
+- a panel unique to that family (for example Breshit tuning or destruct)
 - variant filtering of the dashboard
 
 ### Change boot or routing behavior
@@ -845,7 +856,7 @@ order.
 3. `lib/gui/guiCore.ks`
 4. `lib/gui/guiAutomation.ks`
 5. `lib/gui/panels/*.ks`
-6. an optional family dashboard file under `gui/`
+6. the family dashboard file, for example `gui/breshit.ks` (`startBreshitGui`)
 
 This reading order mirrors the actual runtime flow and keeps abstractions from
 appearing before the code that uses them.

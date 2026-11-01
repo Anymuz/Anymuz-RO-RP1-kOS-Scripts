@@ -1,15 +1,14 @@
-// RESOURCES PANEL
-// Ship-wide resource overview.
-RUNONCEPATH("0:/lib/resources.ks").
+// EXPLAINATION
+// Ship wide resource rows
 // --------------------------------------------------------------
 
+// Resources panel, payloads split out
 DECLARE FUNCTION buildResourcesPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "RESOURCES").
 
-    refreshShipResources().
     LOCAL payloadNames IS LIST().
     LOCAL tankNames IS LIST().
     FOR resourceName IN shipResources:KEYS {

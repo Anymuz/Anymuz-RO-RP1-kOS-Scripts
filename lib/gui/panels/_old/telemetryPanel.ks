@@ -1,8 +1,8 @@
-// TELEMETRY PANEL
-// Live vessel telemetry (read-only). See docs/lib/gui/panels/telemetryPanel.md.
+// EXPLAINATION
+// Live vessel telemetry
 // --------------------------------------------------------------
 
-// Real-time telemetry sampled from SHIP and the shared flightData lexicon.
+// Telemetry panel
 DECLARE FUNCTION buildTelemetryPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

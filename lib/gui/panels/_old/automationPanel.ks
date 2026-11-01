@@ -1,9 +1,9 @@
-// AUTOMATION PANEL
-// One row per registered system: MANUAL toggle + live AUTO/MANUAL status. See docs/lib/gui/panels/automationPanel.md.
+// EXPLAINATION
+// Manual toggle and status for each registered system
 // --------------------------------------------------------------
 
-// One row for a single registered system. Returns the MANUAL checkbox so the
-// master toggle can keep it in sync. sys is captured per call (loop-safe).
+// AUTOMATION PANEL
+// One row per system, returns the manual checkbox
 DECLARE FUNCTION buildSystemRow {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER sys.
@@ -25,17 +25,18 @@ DECLARE FUNCTION buildSystemRow {
 
     registerUpdater({
         IF sys["manual"] {
-            SET statusLabel:TEXT TO colorText("MANUAL", guiTheme["alertColor"]).   // held - pilot fires it
+            SET statusLabel:TEXT TO colorText("MANUAL", guiTheme["alertColor"]).
         } ELSE IF sys["armed"] {
-            SET statusLabel:TEXT TO statusText("AUTO", "NOMINAL").                  // armed, fires automatically
+            SET statusLabel:TEXT TO statusText("AUTO", "NOMINAL").
         } ELSE {
-            SET statusLabel:TEXT TO colorText("STANDBY", guiTheme["mutedColor"]).   // not armed yet
+            SET statusLabel:TEXT TO colorText("STANDBY", guiTheme["mutedColor"]).
         }.
     }).
 
     RETURN manualBox.
 }.
 
+// Automation panel with master manual switch
 DECLARE FUNCTION buildAutomationPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 
@@ -49,7 +50,7 @@ DECLARE FUNCTION buildAutomationPanel {
 
     LOCAL manualBoxes IS LIST().
 
-    // Master switch: take (or release) manual control of everything at once.
+    // Master switch
     guiAddToggle(panel, "MANUAL CONTROL (ALL)", FALSE, {
         PARAMETER isOn.
         setAllSystemsManual(isOn).
@@ -64,3 +65,4 @@ DECLARE FUNCTION buildAutomationPanel {
 
     RETURN panel.
 }.
+// --------------------------------------------------------------

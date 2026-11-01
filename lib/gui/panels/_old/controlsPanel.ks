@@ -1,7 +1,8 @@
-// CONTROLS PANEL
-// Operator action buttons. See docs/lib/gui/panels/controlsPanel.md.
+// EXPLAINATION
+// Operator action buttons
 // --------------------------------------------------------------
 
+// Controls panel
 DECLARE FUNCTION buildControlsPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

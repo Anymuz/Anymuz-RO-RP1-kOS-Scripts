@@ -3,7 +3,7 @@
 Path: `0:/lib/booster.ks`
 
 ## Purpose
-Booster-stage ignition check and main-engine handoff. Watches booster fuel and runs two triggers depending on the launch flow chosen by the ship: ignites the main engine just before booster burnout (sequential flow), then separates spent boosters once fuel is below a safe-separation threshold.
+Booster ignition check and main-engine handoff. Watches booster fuel and runs two triggers depending on the launch flow chosen by the ship: ignites the main engine just before booster burnout (sequential flow), then separates spent boosters once fuel is below a safe-separation threshold. Both are fired by part tag through part actions, never `STAGE`.
 
 ## Imports
 - `0:/lib/resources.ks` (`getResourcePercent`)

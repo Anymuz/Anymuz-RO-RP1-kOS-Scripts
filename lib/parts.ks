@@ -1,16 +1,16 @@
-// PARTS
-// Trigger actions/events on tagged parts, after checking they are available.
-// Use boot/partDump.ks to find action and event names.
+// EXPLAINATION
+// Fires tagged part actions and events directly, names from boot/partDump.ks
 // --------------------------------------------------------------
 
-// TRUE if any part carries this tag.
+// PART CHECKS
+// TRUE if tag exists
 DECLARE FUNCTION taggedPartsExist {
     DECLARE PARAMETER partTag.
 
     RETURN SHIP:PARTSTAGGED(partTag):LENGTH > 0.
 }.
 
-// TRUE if the part has a module exposing actionName.
+// TRUE if part has the action
 DECLARE FUNCTION partHasAction {
     DECLARE PARAMETER part.
     DECLARE PARAMETER actionName.
@@ -23,7 +23,7 @@ DECLARE FUNCTION partHasAction {
     RETURN FALSE.
 }.
 
-// TRUE if the part has a module exposing eventName.
+// TRUE if part has the event
 DECLARE FUNCTION partHasEvent {
     DECLARE PARAMETER part.
     DECLARE PARAMETER eventName.
@@ -35,8 +35,10 @@ DECLARE FUNCTION partHasEvent {
     }.
     RETURN FALSE.
 }.
+// --------------------------------------------------------------
 
-// Fire actionName on one part (first module that has it). Returns TRUE if fired.
+// SINGLE PART ACTIONS
+// Fires an action on one part
 DECLARE FUNCTION doPartAction {
     DECLARE PARAMETER part.
     DECLARE PARAMETER actionName.
@@ -52,7 +54,7 @@ DECLARE FUNCTION doPartAction {
     RETURN FALSE.
 }.
 
-// Fire eventName on one part (first module that has it). Returns TRUE if fired.
+// Fires an event on one part
 DECLARE FUNCTION doPartEvent {
     DECLARE PARAMETER part.
     DECLARE PARAMETER eventName.
@@ -66,9 +68,10 @@ DECLARE FUNCTION doPartEvent {
     }.
     RETURN FALSE.
 }.
+// --------------------------------------------------------------
 
-// Fire actionName on every part tagged partTag. Returns the count acted on.
-// Warns (does nothing else) if the tag matched nothing or the parts lack the action.
+// TAGGED PART ACTIONS
+// Fires an action on every tagged part
 DECLARE FUNCTION doTaggedAction {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER actionName.
@@ -93,7 +96,7 @@ DECLARE FUNCTION doTaggedAction {
     RETURN done.
 }.
 
-// Fire eventName on every part tagged partTag. Returns the count acted on.
+// Fires an event on every tagged part
 DECLARE FUNCTION doTaggedEvent {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER eventName.
@@ -116,8 +119,10 @@ DECLARE FUNCTION doTaggedEvent {
     }.
     RETURN done.
 }.
+// --------------------------------------------------------------
 
-// Resolve action modules before firing so scanning cannot delay multi-part ignition.
+// SIMULTANEOUS IGNITION
+// Finds action modules ahead of time
 DECLARE FUNCTION resolveTaggedActionModules {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER actionName.
@@ -135,7 +140,7 @@ DECLARE FUNCTION resolveTaggedActionModules {
     RETURN found.
 }.
 
-// Fire resolved actions in one tick by raising kOS's instruction budget.
+// Fires found modules together, same tick
 DECLARE FUNCTION igniteResolvedModules {
     DECLARE PARAMETER modules.
     DECLARE PARAMETER actionName.
@@ -151,3 +156,5 @@ DECLARE FUNCTION igniteResolvedModules {
     SET CONFIG:IPU TO previousIPU.
     RETURN modules:LENGTH.
 }.
+// --------------------------------------------------------------
+

@@ -1,7 +1,8 @@
-// AUDIO PANEL
-// Audio test bench. See docs/lib/gui/panels/audioPanel.md.
+// EXPLAINATION
+// Audio test buttons
 // --------------------------------------------------------------
 
+// Audio test panel
 DECLARE FUNCTION buildAudioPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

@@ -1,4 +1,9 @@
-// Flight statistics and engine monitoring.
+// EXPLAINATION
+// * For tracking and monitoring flight and engine
+// --------------------------------------------------------------
+
+// FLIGHT TRACKING
+// Stores flight stats in flightData
 DECLARE FUNCTION trackFlightStats {
     // UNTIL flightData["descentCaptured"] {
     WHEN TRUE THEN  {
@@ -23,11 +28,13 @@ DECLARE FUNCTION trackFlightStats {
         PRESERVE.
     }.
 }.
+// --------------------------------------------------------------
 
-// Monitor tagged engines for ignition, flameout, and thrust failures.
+// ENGINE MONITORING
+// Watches engine for failures
 DECLARE FUNCTION monitorEngines {
     DECLARE PARAMETER engineTag IS "U-1250".
-    DECLARE PARAMETER remainingFuelPercentage IS 2. // Expected tank fill % remaining at natural engine cutoff.
+    DECLARE PARAMETER remainingFuelPercentage IS 2. // % left at cutoff
     DECLARE PARAMETER fuelTank IS "HPSFT".
     DECLARE PARAMETER spoolupTime IS 0.13.
 
@@ -39,7 +46,7 @@ DECLARE FUNCTION monitorEngines {
     LOCAL thrustLossReported IS FALSE.
     LOCAL engineOfflineReported IS FALSE.
 
-    LOCAL startupGrace IS MAX(spoolupTime, 0.7). // Allow thrust to build before checking for loss.
+    LOCAL startupGrace IS MAX(spoolupTime, 0.7). // seconds
     LOCAL thrustSeen IS FALSE.
     LOCAL thrustStartTime IS 0.
 
@@ -85,7 +92,7 @@ DECLARE FUNCTION monitorEngines {
                 SET flameoutReported TO TRUE.
             }.
 
-            // Thrust loss failure (below 85% of max thrust).
+            // Thrust loss failure (below 85%)
             LOCAL thrustReady IS thrustSeen AND TIME:SECONDS > thrustStartTime + startupGrace.
             LOCAL thrustLow IS engine:MAXTHRUST > 0 AND engine:THRUST < (engine:MAXTHRUST * 0.85) AND engine:THRUST > 0.
             IF hasFuel AND thrustReady AND thrustLow AND NOT thrustLossReported {
@@ -96,7 +103,7 @@ DECLARE FUNCTION monitorEngines {
                 SET thrustLossReported TO TRUE.
             }.
 
-            // Report the engine offline after a confirmed failure.
+            // Engine offline
             IF (ignitionFailureReported OR engineFailureReported OR flameoutReported) AND NOT engineOfflineReported {
                 logMessage("Main engine offline.", "offline", TRUE, FALSE, TRUE).
                 SET engineOfflineReported TO TRUE.

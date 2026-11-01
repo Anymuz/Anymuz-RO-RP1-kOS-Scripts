@@ -1,5 +1,6 @@
-// 0:/system/failureInfo.ks
-// Shown by loadShip.ks when no script matches the current vessel name.
+// EXPLAINATION
+// Shown by loadShip.ks when no script matches the vessel name.
+// --------------------------------------------------------------
 
 CLEARSCREEN.
 PRINT "================================================================".

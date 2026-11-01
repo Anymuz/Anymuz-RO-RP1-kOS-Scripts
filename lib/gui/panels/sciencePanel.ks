@@ -1,8 +1,9 @@
-// Telemetry reveals the other available experiments.
-RUNONCEPATH("0:/lib/science.ks").
+// EXPLAINATION
+// Science experiment toggles, telemetry reveals the rest
 // --------------------------------------------------------------
 
-// Add an experiment row with a status label and toggle.
+// SCIENCE PANEL
+// Experiment row with toggle
 DECLARE FUNCTION addExperimentRow {
     DECLARE PARAMETER panel.
     DECLARE PARAMETER expName.
@@ -22,13 +23,13 @@ DECLARE FUNCTION addExperimentRow {
     guiAddButton(row, "Toggle", { toggleExperimentEvent(expName). }).
 }.
 
+// Science panel, other experiments added after telemetry toggle
 DECLARE FUNCTION buildSciencePanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "SCIENCE").
 
-    // Other experiments appear after telemetry is toggled.
     LOCAL found IS LIST().
 
     LOCAL telemetryRow IS panel:ADDHLAYOUT().
@@ -43,7 +44,6 @@ DECLARE FUNCTION buildSciencePanel {
     guiAddButton(telemetryRow, "Toggle Telemetry", {
         toggleExperimentEvent(telemetryExperimentName).
 
-        // Toggling telemetry loads the other experiment events.
         FOR expName IN listAvailableExperiments() {
             IF expName <> telemetryExperimentName AND NOT found:CONTAINS(expName) {
                 found:ADD(expName).
@@ -71,3 +71,4 @@ DECLARE FUNCTION buildSciencePanel {
 
     RETURN panel.
 }.
+// --------------------------------------------------------------

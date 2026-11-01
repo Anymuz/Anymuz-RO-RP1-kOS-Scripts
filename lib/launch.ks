@@ -1,33 +1,38 @@
-// LAUNCH SEQUENCING
-GLOBAL launchCommanded IS FALSE.
-GLOBAL launchCommandPending IS FALSE.
-GLOBAL launchCountdown IS 10.
+// EXPLAINATION
+// * Functions library to launch the vehicle
+// --------------------------------------------------------------
+
+// LAUNCH HOLD
+GLOBAL launchCommanded IS FALSE. // TRUE releases hold
+GLOBAL launchCountdown IS 10.    // seconds
 
 DECLARE FUNCTION commandLaunch {
-    IF flightData["phase"] <> "prelaunch" {
-        logMessage("Launch command ignored: vehicle is no longer in prelaunch.", "warning", TRUE, FALSE, TRUE).
-        RETURN.
-    }.
-    IF launchCommanded {
-        RETURN.
-    }.
-
-    SET flightData["launchGeo"] TO SHIP:GEOPOSITION.
     SET launchCommanded TO TRUE.
-    SET launchCommandPending TO TRUE.
-}.
+}. // Hook for GUI button or action group
+// --------------------------------------------------------------
 
+// INITIAL DOUBLE-PHASE IGNITION LAUNCH FUNCTIONS
+// Waits for keypress or GUI launch
 DECLARE FUNCTION initializeLaunch {
-    logMessage("Launch sequence standby. Press LAUNCH on the mission control panel to proceed.", "standby", TRUE, FALSE, TRUE).
-    WAIT UNTIL launchCommandPending.
-    SET launchCommandPending TO FALSE.
+    logMessage("Launch standby. Press any key or GUI LAUNCH to proceed.", "standby", TRUE, FALSE, TRUE).
+
+    SET launchCommanded TO FALSE.
+    TERMINAL:INPUT:CLEAR().
+    UNTIL launchCommanded OR TERMINAL:INPUT:HASCHAR {
+        WAIT 0.1.
+    }.
+    IF TERMINAL:INPUT:HASCHAR {
+        TERMINAL:INPUT:GETCHAR().
+    }.
+
     WAIT 0.05.
     CLEARSCREEN.
-    logMessage("User input detected", "action", TRUE, FALSE, FALSE).
+    logMessage("Launch command received.", "action", TRUE, FALSE, FALSE).
     logMessage("Launch sequence now commencing.", "alert", TRUE, TRUE, TRUE).
     WAIT 1.
 }.
 
+// Countdown with audio
 DECLARE FUNCTION countdownLaunch {
     DECLARE PARAMETER seconds IS launchCountdown.
     CLEARSCREEN.
@@ -46,13 +51,12 @@ DECLARE FUNCTION countdownLaunch {
         PRINT "                                                                                                                          " AT(0,8).
     }.
     logMessage("Countdown complete.", "launch", TRUE, FALSE, FALSE).
-    SET launchCommanded TO FALSE.
 }.
 
-// The first stage event must ignite the main engine and boosters together.
-// armBoosterSeperation() handles booster separation and later ignition.
-
+// Lights boosters and main engine by part tag, then releases the clamp
 DECLARE FUNCTION launchShip {
+    DECLARE PARAMETER syncIgnition IS FALSE. // TRUE = boosters first, main engine later
+
     SET flightData["phase"] TO "prelaunch".
     LOCK THROTTLE TO 1.
     LOCK STEERING TO UP.
@@ -61,21 +65,49 @@ DECLARE FUNCTION launchShip {
 
     WAIT 0.1.
     CLEARSCREEN.
-    logMessage("Main engine and booster ignition.", "active", TRUE, FALSE, TRUE).
+    IF syncIgnition {
+        logMessage("Booster ignition. Main engine ignition synced to booster fuel level.", "active", TRUE, FALSE, TRUE).
+    } ELSE {
+        logMessage("Main engine and booster ignition.", "active", TRUE, FALSE, TRUE).
+    }.
+
+    // Resolved up front so ignition fires together, same tick
+    LOCAL ignitionModules IS resolveTaggedActionModules(boosterType, "activate engine").
+    IF NOT syncIgnition {
+        FOR m IN resolveTaggedActionModules(mainEngine, "activate engine") {
+            ignitionModules:ADD(m).
+        }.
+    }.
 
     WAIT 0.1.
-    STAGE.
-    playLaunchSound().
 
-    // Skip the main-engine ignition stage in armBoosterSeperation().
-    SET flightData["phase"] TO "main".
-    logMessage("Liftoff! Simultaneous ignition completed.", "launch", TRUE, FALSE, TRUE).
+    IF syncIgnition {
+        // Sequential, armBoosterSeperation lights main engine later
+        SET flightData["phase"] TO "booster".
+    } ELSE {
+        // Simultaneous, armBoosterSeperation skips its own ignition
+        SET flightData["phase"] TO "main".
+    }.
+
+    // Raised instruction budget so ignition and clamp release fire together
+    LOCAL previousIPU IS CONFIG:IPU.
+    SET CONFIG:IPU TO MAX(previousIPU, 2000).
+    igniteResolvedModules(ignitionModules, "activate engine").
+    LOCAL clampsReleased IS doTaggedAction(launchClamp, "release clamp").
+    SET CONFIG:IPU TO previousIPU.
+
+    IF syncIgnition {
+        logMessage("Liftoff! Boosters lit; main engine ignition pending fuel threshold.", "launch", TRUE, FALSE, TRUE).
+    } ELSE {
+        logMessage("Liftoff! Simultaneous ignition completed.", "launch", TRUE, FALSE, TRUE).
+    }.
+    logMessage("CLAMP ACTION: release clamp fired on " + clampsReleased + " part(s).", "active", TRUE, FALSE, TRUE).
+    playLaunchSound().   
 }.
+// --------------------------------------------------------------
 
-// =====================================================
 // CLAMP-HELD ENGINE LAUNCH FUNCTIONS
-// =====================================================
-
+// Total thrust of tagged engines (kN)
 DECLARE FUNCTION getTaggedEngineThrust {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -90,6 +122,7 @@ DECLARE FUNCTION getTaggedEngineThrust {
 }.
 
 
+// Total max thrust of tagged engines (kN)
 DECLARE FUNCTION getTaggedEngineMaxThrust {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -104,6 +137,7 @@ DECLARE FUNCTION getTaggedEngineMaxThrust {
 }.
 
 
+// Thrust to weight of the whole ship
 DECLARE FUNCTION getTaggedEngineTWR {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -115,6 +149,7 @@ DECLARE FUNCTION getTaggedEngineTWR {
 }.
 
 
+// Any tagged engine flamed out
 DECLARE FUNCTION taggedEnginesHaveFlameout {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -130,6 +165,7 @@ DECLARE FUNCTION taggedEnginesHaveFlameout {
 }.
 
 
+// Any tagged engine has ignition signal
 DECLARE FUNCTION taggedEnginesHaveIgnitionSignal {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -145,6 +181,7 @@ DECLARE FUNCTION taggedEnginesHaveIgnitionSignal {
 }.
 
 
+// Counts tagged engines
 DECLARE FUNCTION countTaggedEngines {
     DECLARE PARAMETER engineTag IS "U-1250".
 
@@ -152,11 +189,10 @@ DECLARE FUNCTION countTaggedEngines {
 }.
 
 
-// This is a light check used during clamp-held ignition.
-// It checks for obvious failures before release.
+// Light check for obvious failures before release
 DECLARE FUNCTION checkClampHeldEngineHealth {
     DECLARE PARAMETER engineTag IS "U-1250".
-    DECLARE PARAMETER minimumThrust IS 0.1.
+    DECLARE PARAMETER minimumThrust IS 0.1.   // kN
 
     IF countTaggedEngines(engineTag) <= 0 {
         logMessage("Prelaunch engine failure: no engines found with tag: " + engineTag + ".", "critical", TRUE, TRUE, TRUE).
@@ -171,42 +207,30 @@ DECLARE FUNCTION checkClampHeldEngineHealth {
     LOCAL currentThrust IS getTaggedEngineThrust(engineTag).
 
     IF currentThrust <= minimumThrust {
-        // This is not immediately fatal because the engine may still be spooling up.
+        // Might still be spooling up
         RETURN TRUE.
     }.
 
     RETURN TRUE.
 }.
 
-
-// Waits until engine is safe to release from launch clamp.
-// It confirms:
-// - engine exists
-// - no flameout
-// - TWR reaches target
-// - TWR remains stable briefly
-// - thrust is not decaying
-// - optional propellant drain is confirmed
+// Waits until engine is safe to release from launch clamp
 DECLARE FUNCTION waitForClampReleaseReadiness {
     DECLARE PARAMETER engineTag IS "U-1250".
     DECLARE PARAMETER fuelTankTag IS "HPSFT".
-    DECLARE PARAMETER propellant IS "Kerosene".
-    DECLARE PARAMETER oxidizer IS "AK20".
     DECLARE PARAMETER releaseTWR IS 1.3.
-    DECLARE PARAMETER maxClampWait IS 15.
-    DECLARE PARAMETER stableHoldTime IS 0.5.
+    DECLARE PARAMETER maxClampWait IS 15.   // seconds
+    DECLARE PARAMETER stableHoldTime IS 0.5.   // seconds
     DECLARE PARAMETER maxTWRDrop IS 0.05.
-    DECLARE PARAMETER requirePropellantDrain IS TRUE.
-    DECLARE PARAMETER resourceCheckDelay IS 0.5.
+    DECLARE PARAMETER requireFuelDrain IS TRUE.
+    DECLARE PARAMETER resourceCheckDelay IS 0.5.   // seconds
 
     LOCAL startTime IS TIME:SECONDS.
     LOCAL stableStart IS -1.
     LOCAL previousTWR IS 0.
-    LOCAL propellantDrainConfirmed IS FALSE.
-    LOCAL oxidizerDrainConfirmed IS FALSE.
+    LOCAL fuelDrainConfirmed IS FALSE.
 
-    LOCAL startingPropellant IS sumPartResource(fuelTankTag, propellant).
-    LOCAL startingOxidizer IS sumPartResource(fuelTankTag, oxidizer).
+    LOCAL startingFuel IS getResourceAmount("", fuelTankTag). // All resources in tank
 
     logMessage("Monitoring clamp-held engine start.", "launch", TRUE, FALSE, TRUE).
     logMessage("Clamp release target TWR: " + releaseTWR + ".", "launch", TRUE, FALSE, TRUE).
@@ -216,8 +240,7 @@ DECLARE FUNCTION waitForClampReleaseReadiness {
 
         LOCAL currentTWR IS getTaggedEngineTWR(engineTag).
         LOCAL currentThrust IS getTaggedEngineThrust(engineTag).
-        LOCAL currentPropellant IS sumPartResource(fuelTankTag, propellant).
-        LOCAL currentOxidizer IS sumPartResource(fuelTankTag, oxidizer).
+        LOCAL currentFuel IS getResourceAmount("", fuelTankTag).
         LOCAL elapsed IS TIME:SECONDS - startTime.
 
         PRINT "CLAMP TWR: " + ROUND(currentTWR, 3) + " / " + releaseTWR + "      " AT(0, 5).
@@ -228,19 +251,15 @@ DECLARE FUNCTION waitForClampReleaseReadiness {
             RETURN FALSE.
         }.
 
-        IF currentPropellant < startingPropellant {
-            SET propellantDrainConfirmed TO TRUE.
+        IF currentFuel < startingFuel {
+            SET fuelDrainConfirmed TO TRUE.
         }.
 
-        IF currentOxidizer < startingOxidizer {
-            SET oxidizerDrainConfirmed TO TRUE.
-        }.
-
-        IF elapsed > resourceCheckDelay AND requirePropellantDrain {
+        IF elapsed > resourceCheckDelay AND requireFuelDrain {
             IF currentThrust > 0.1 {
-                IF NOT propellantDrainConfirmed OR NOT oxidizerDrainConfirmed {
-                    logMessage("Prelaunch engine failure: thrust detected but propellant drain not confirmed.", "critical", TRUE, TRUE, TRUE).
-                    logMessage("Check fuel tank tag or resource names if this is a false abort.", "warning", TRUE, FALSE, TRUE).
+                IF NOT fuelDrainConfirmed {
+                    logMessage("Prelaunch engine failure: thrust detected but fuel drain not confirmed.", "critical", TRUE, TRUE, TRUE).
+                    logMessage("Check fuel tank tag if this is a false abort.", "warning", TRUE, FALSE, TRUE).
                     RETURN FALSE.
                 }.
             }.
@@ -281,16 +300,15 @@ DECLARE FUNCTION waitForClampReleaseReadiness {
 }.
 
 
-// For rockets without boosters: first stage ignites the engine, second releases the clamp.
+// Launches without boosters, holds on clamp until TWR is good
 DECLARE FUNCTION launchShipClampTWR {
     DECLARE PARAMETER engineTag IS "U-1250".
     DECLARE PARAMETER fuelTankTag IS "HPSFT".
-    DECLARE PARAMETER propellant IS "Kerosene".
-    DECLARE PARAMETER oxidizer IS "AK20".
     DECLARE PARAMETER releaseTWR IS 1.3.
-    DECLARE PARAMETER maxClampWait IS 15.
-    DECLARE PARAMETER launchAzimuth IS 90.
-    DECLARE PARAMETER requirePropellantDrain IS TRUE.
+    DECLARE PARAMETER maxClampWait IS 15.   // seconds
+    DECLARE PARAMETER launchAzimuth IS 90.   // degrees
+    DECLARE PARAMETER requireFuelDrain IS TRUE.
+    DECLARE PARAMETER clampTag IS launchClamp.
 
     SET flightData["phase"] TO "prelaunch".
 
@@ -302,22 +320,27 @@ DECLARE FUNCTION launchShipClampTWR {
     WAIT 0.1.
     CLEARSCREEN.
 
+    LOCAL ignitionModules IS resolveTaggedActionModules(engineTag, "activate engine").
+    IF ignitionModules:LENGTH = 0 {
+        logMessage("Launch aborted: no part tagged '" + engineTag + "' has an activate engine action.", "abort", TRUE, TRUE, TRUE).
+        LOCK THROTTLE TO 0.
+        SET flightData["phase"] TO "aborted".
+        RETURN FALSE.
+    }.
+
     logMessage("Main engine ignition command sent.", "active", TRUE, FALSE, TRUE).
 
-    // First STAGE call should ignite the engine.
-    STAGE.
+    igniteResolvedModules(ignitionModules, "activate engine").
     playLaunchSound().
 
     IF NOT waitForClampReleaseReadiness(
         engineTag,
         fuelTankTag,
-        propellant,
-        oxidizer,
         releaseTWR,
         maxClampWait,
         0.5,
         0.05,
-        requirePropellantDrain,
+        requireFuelDrain,
         0.5
     ) {
         logMessage("Launch aborted while held on clamp.", "abort", TRUE, TRUE, TRUE).
@@ -328,8 +351,10 @@ DECLARE FUNCTION launchShipClampTWR {
 
     logMessage("Releasing launch clamp.", "launch", TRUE, FALSE, TRUE).
 
-    // Second STAGE call should release the clamp.
-    STAGE.
+    LOCAL clampsReleased IS doTaggedAction(clampTag, "release clamp").
+    IF clampsReleased = 0 {
+        logMessage("No launch clamp released, check clamp tag '" + clampTag + "'.", "warning", TRUE, FALSE, TRUE).
+    }.
 
     SET flightData["phase"] TO "main".
 
@@ -337,3 +362,4 @@ DECLARE FUNCTION launchShipClampTWR {
 
     RETURN TRUE.
 }.
+// --------------------------------------------------------------

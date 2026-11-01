@@ -1,4 +1,5 @@
-// Console alert tone definitions.
+// EXPLAINATION
+// Single note tones for console alerts.
 // --------------------------------------------------------------
 
 // INITALIZATION

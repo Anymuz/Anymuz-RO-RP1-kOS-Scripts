@@ -1,29 +1,8 @@
-// 0:/lib/downrange.ks
+// EXPLAINATION
+// * This is the ascent guidance system for downrange rockets.
+// --------------------------------------------------------------
 
-DECLARE FUNCTION downrangeDistance {
-    DECLARE PARAMETER launchPosition.
-    DECLARE PARAMETER currentPosition IS SHIP:GEOPOSITION.
-
-    LOCAL lat1 IS launchPosition:LAT.
-    LOCAL lat2 IS currentPosition:LAT.
-    LOCAL lonDelta IS currentPosition:LNG - launchPosition:LNG.
-    LOCAL cosine IS SIN(lat1) * SIN(lat2) + COS(lat1) * COS(lat2) * COS(lonDelta).
-    SET cosine TO clampValue(cosine, -1, 1).
-
-    RETURN SHIP:BODY:RADIUS * ARCCOS(cosine).
-}.
-
-DECLARE FUNCTION velocityMph {
-    DECLARE PARAMETER metersPerSecond.
-    RETURN metersPerSecond * 2.236936.
-}.
-
-DECLARE FUNCTION velocityKmh {
-    DECLARE PARAMETER metersPerSecond.
-    RETURN metersPerSecond * 3.6.
-}.
-
-// Uses early kick-turn guidance instead of slow altitude-only pitch-over.
+// MATHEMATICAL FUNCTIONS
 DECLARE FUNCTION clampValue {
     DECLARE PARAMETER value.
     DECLARE PARAMETER minValue.
@@ -38,9 +17,8 @@ DECLARE FUNCTION clampValue {
     }.
 
     RETURN value.
-}.
+}. // Keeps a value between min and max
 
-// Calculates target pitch based on altitude and defined turn profile.
 DECLARE FUNCTION calculateDownrangePitch {
     DECLARE PARAMETER turnStartAlt IS 0.
     DECLARE PARAMETER kickEndAlt IS 300.
@@ -63,8 +41,7 @@ DECLARE FUNCTION calculateDownrangePitch {
         RETURN 90.
     }.
 
-    // Phase 1:
-    // Immediate visible kick from vertical to kickPitch.
+    // Phase 1: kick to kickPitch
     IF ALTITUDE < kickEndAlt {
 
         LOCAL kickProgress IS (ALTITUDE - turnStartAlt) / (kickEndAlt - turnStartAlt).
@@ -73,21 +50,20 @@ DECLARE FUNCTION calculateDownrangePitch {
         RETURN 90 - ((90 - kickPitch) * kickProgress).
     }.
 
-    // Phase 2:
-    // Continue from kickPitch down to finalPitch.
+    // Phase 2: kickPitch down to finalPitch
     LOCAL rawProgress IS (ALTITUDE - kickEndAlt) / (turnEndAlt - kickEndAlt).
     LOCAL progress IS clampValue(rawProgress, 0, 1).
 
-    // turnShape below 1 = more aggressive early turn.
-    // turnShape above 1 = holds steeper for longer.
+    // turnShape below 1 turns earlier, above 1 holds steeper longer
     LOCAL curvedProgress IS progress ^ turnShape.
 
     LOCAL targetPitch IS kickPitch - ((kickPitch - finalPitch) * curvedProgress).
 
     RETURN clampValue(targetPitch, finalPitch, 90).
-}.
+}. // Calculates target pitch based on altitude and defined turn profile.
+// --------------------------------------------------------------
 
-// Logs the defined downrange guidance profile parameters.
+// CONSOLE LOGGING 
 DECLARE FUNCTION logDownrangeProfile {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -110,9 +86,11 @@ DECLARE FUNCTION logDownrangeProfile {
     logMessage("Turn shape: " + turnShape + ".", "guidance", TRUE, FALSE, TRUE).
     logMessage("Guidance end altitude: " + guidanceEndAlt + "m.", "guidance", TRUE, FALSE, TRUE).
     logMessage("Prograde hold after guidance: " + lockProgradeAfterGuidance + ".", "guidance", TRUE, FALSE, TRUE).
-}.
+}. // Logs the defined downrange guidance profile parameters.
+// --------------------------------------------------------------
 
-// Arm downrange guidance and log progress.
+// MAIN GUIDANCE FUNCTION
+// Arms the downrange guidance profile, applying calculated pitch targets and logging progress.
 DECLARE FUNCTION armDownrangeGuidance {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -209,4 +187,5 @@ DECLARE FUNCTION armDownrangeGuidance {
             }.
         }.
     }.
-}.
+}. 
+// --------------------------------------------------------------

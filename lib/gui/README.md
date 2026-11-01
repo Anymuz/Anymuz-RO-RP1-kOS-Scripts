@@ -65,11 +65,12 @@ recovery, systems, automation, controls, audio) plus its loader `guiPanels.ks`
 aren't loaded by default — they were retired once families moved to bespoke
 dashboards. Restore a file before relying on it.
 
-For a custom family dashboard, define a `start<Family>Gui()` function that
-creates the window, adds tabs with `guiAddTabs`, and calls the family's panel
-builders directly. It does not need to go through `guiDashboard.ks`'s generic
-`guiLayout`/`startDashboard` path — that remains a fallback for quick
-experiments, but most of the panels it expects are currently retired (see above).
+**The pattern in current use** — see [gui/breshit.ks](../../gui/breshit.ks): a
+family owns one `start<Family>Gui()` function that creates the window, adds tabs
+with `guiAddTabs`, and calls its panel builders directly. It does not go through
+`guiDashboard.ks`'s generic `guiLayout`/`startDashboard` path — that remains a
+fallback for `ships/sandbox.ks` and quick experiments, but most of the panels it
+expects are currently retired (see above).
 
 ---
 
@@ -109,11 +110,8 @@ yourself first is always safe — nothing fires until the button is pressed whil
 ticked:
 
 ```ks
-guiAddArmedAction(panel, "SELF DESTRUCT", { requestSelfDestruct("MANUAL INPUT", 3). }).
+guiAddArmedAction(panel, "SELF DESTRUCT", { selfDestruct("MANUAL INPUT", 3). }).
 ```
-
-Use `requestSelfDestruct` for GUI callbacks. It queues a timed action without
-blocking other GUI callbacks during the fuze.
 
 ### Editable pilot input
 
@@ -176,8 +174,8 @@ DECLARE FUNCTION startMyShipGui {
 ```
 
 Each `buildXxx` is a plain function: take a box, add rows/buttons, call
-`registerUpdater` if anything's live, and return the box. Start from a ship
-template in `docs/script-templates/` when creating a family dashboard.
+`registerUpdater` if anything's live, return the box. Copy
+[gui/breshit.ks](../../gui/breshit.ks) as a working starting template.
 
 ### Quick experimentation
 

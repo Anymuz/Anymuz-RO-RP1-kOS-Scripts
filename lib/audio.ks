@@ -1,6 +1,8 @@
-// 0:/lib/audio.ks
+// EXPLAINATION
 // Library of functions to set up audio driver.
+// --------------------------------------------------------------
 
+// INITALIZATION
 SET audioInitialized TO FALSE.
 SET launchAudio TO FALSE.
 SET alertAudio TO FALSE.
@@ -10,21 +12,12 @@ GLOBAL alarmState IS LEXICON().
 SET alarmState["active"] TO FALSE.
 SET alarmState["name"] TO "".
 SET alarmState["stopTime"] TO 0.
+// --------------------------------------------------------------
 
-GLOBAL audioTestState IS LEXICON(
-    "active", FALSE,
-    "mode", "",
-    "step", 0,
-    "full", FALSE,
-    "alarmDuration", 3,
-    "nextTime", 0
-).
-
-
+// SETUP FUNCTIONS
 DECLARE FUNCTION loadLaunchAudio {
     SET launchAudio TO GETVOICE(0).
     SET launchAudio:WAVE TO "SINE".
-    // Notes are defined in lib/sounds/launchSounds.ks
     RUNONCEPATH("0:/lib/sounds/launchSounds.ks").
 }.
 
@@ -32,7 +25,6 @@ DECLARE FUNCTION loadLaunchAudio {
 DECLARE FUNCTION loadAlertAudio {
     SET alertAudio TO GETVOICE(1).
     SET alertAudio:WAVE TO "SQUARE".
-    // Notes are defined in lib/sounds/alertSounds.ks
     RUNONCEPATH("0:/lib/sounds/alertSounds.ks").
 }.
 
@@ -41,11 +33,11 @@ DECLARE FUNCTION loadAlarms {
     SET alarmSound TO GETVOICE(2).
     SET alarmSound:WAVE TO "SAWTOOTH".
     SET alarmSound:LOOP TO TRUE.
-    // Song is defined in lib/sounds/alarmSounds.ks
     RUNONCEPATH("0:/lib/sounds/alarmSounds.ks").
 }.
 
 
+// Stops sounds before setup
 DECLARE FUNCTION checkAudioInitialized {
     IF NOT audioInitialized {
         logMessage("Audio driver not initialized. Call setupAudio() before using audio functions.", "error", TRUE, FALSE, TRUE).
@@ -54,8 +46,9 @@ DECLARE FUNCTION checkAudioInitialized {
         RETURN TRUE.
     }.
 }.
+// --------------------------------------------------------------
 
-
+// ALARM LOGGING
 DECLARE FUNCTION logAlarmStarted {
     DECLARE PARAMETER alarmName.
     DECLARE PARAMETER duration IS 0.
@@ -89,15 +82,16 @@ DECLARE FUNCTION logAlarmStopped {
         SET alarmState["stopTime"] TO 0.
     }.
 }.
+// --------------------------------------------------------------
 
-
+// ALARM STOP KEY
 GLOBAL alarmStopKey IS "#".
 GLOBAL alarmStopKeyArmed IS FALSE.
 
+// Listens for the stop key
 DECLARE FUNCTION armAlarmKeyStop {
     DECLARE PARAMETER keyName IS "#".
 
-    // Change the active alarm stop key.
     SET alarmStopKey TO keyName.
 
     // Only create the listener once.
@@ -117,25 +111,9 @@ DECLARE FUNCTION armAlarmKeyStop {
 
     logMessage("Alarm stop key armed. Press '" + alarmStopKey + "' to stop alarms.", "audio", TRUE, FALSE, TRUE).
 }.
+// --------------------------------------------------------------
 
-
-DECLARE FUNCTION stopAlarmAfter {
-    DECLARE PARAMETER seconds IS 5.
-
-    LOCAL stopTime IS TIME:SECONDS + seconds.
-
-    WHEN TRUE THEN {
-        IF NOT alarmState["active"] {
-            // Alarm was already manually stopped.
-        } ELSE IF TIME:SECONDS >= stopTime {
-            stopAlarmSound(FALSE).
-        } ELSE {
-            PRESERVE.
-        }.
-    }.
-}.
-
-
+// SOUNDS AND ALARMS
 DECLARE FUNCTION playCountdownSound {
     IF NOT checkAudioInitialized() RETURN.
     launchAudio:PLAY(getCountdownNote()).
@@ -171,14 +149,13 @@ DECLARE FUNCTION playAlertSound {
 }.
 
 
-// Alarm functions. These loop until stopped with user input from armAlarmKeyStop().
-// If you want an alarm to play only for set duration provide the duration parameter.
+// Loops until stopped, or give a duration
 DECLARE FUNCTION playDetonationAlarm {
     DECLARE PARAMETER duration IS 0.
 
     IF NOT checkAudioInitialized() RETURN.
 
-    stopAlarmSound(FALSE). // Ensure detonation alarm sounds even if another alarm is currently playing.
+    stopAlarmSound(FALSE). // Cuts any alarm already playing
     alarmSound:PLAY(getDetonationAlarm()).
     logAlarmStarted("detonation", duration).
 
@@ -193,7 +170,7 @@ DECLARE FUNCTION playEngineFailureAlarm {
 
     IF NOT checkAudioInitialized() RETURN.
 
-    stopAlarmSound(FALSE). // Ensure engine failure alarm sounds even if another alarm is currently playing.
+    stopAlarmSound(FALSE). // Cuts any alarm already playing
     alarmSound:PLAY(getEngineFailureAlarm()).
     logAlarmStarted("engine failure", duration).
 
@@ -201,8 +178,8 @@ DECLARE FUNCTION playEngineFailureAlarm {
         stopAlarmAfter(duration).
     }.
 }.
-
-
+ 
+// Stops alarm and clears state
 DECLARE FUNCTION stopAlarmSound {
     DECLARE PARAMETER manualStop IS FALSE.
 
@@ -213,6 +190,26 @@ DECLARE FUNCTION stopAlarmSound {
 }.
 
 
+// Timed alarm stop
+DECLARE FUNCTION stopAlarmAfter {
+    DECLARE PARAMETER seconds IS 5.
+
+    LOCAL stopTime IS TIME:SECONDS + seconds.
+
+    WHEN TRUE THEN {
+        IF NOT alarmState["active"] {
+            // Alarm was already manually stopped.
+        } ELSE IF TIME:SECONDS >= stopTime {
+            stopAlarmSound(FALSE).
+        } ELSE {
+            PRESERVE.
+        }.
+    }.
+}.
+// --------------------------------------------------------------
+
+// TESTING FUNCTIONS
+// Tests alert tones
 DECLARE FUNCTION testAlertAudio {
     IF NOT checkAudioInitialized() RETURN.
     skipLine().
@@ -235,7 +232,7 @@ DECLARE FUNCTION testAlertAudio {
     skipLine().
 }.
 
-
+// Tests launch tones
 DECLARE FUNCTION testLaunchAudio {
     IF NOT checkAudioInitialized() RETURN.
 
@@ -255,7 +252,7 @@ DECLARE FUNCTION testLaunchAudio {
     skipLine().
 }.
 
-
+// Tests alarms
 DECLARE FUNCTION testAlarms {
     DECLARE PARAMETER duration IS 3.
 
@@ -286,7 +283,7 @@ DECLARE FUNCTION testAlarms {
     skipLine().
 }.
 
-
+// Runs all audio tests 
 DECLARE FUNCTION fullAudioTest {
     DECLARE PARAMETER alarmDuration IS 5.
 
@@ -308,127 +305,12 @@ DECLARE FUNCTION fullAudioTest {
     logMessage("Completed full audio test.", "test", TRUE, FALSE, TRUE).
     skipLine().
 }.
+// --------------------------------------------------------------
 
-DECLARE FUNCTION requestAudioTest {
-    DECLARE PARAMETER testName IS "full".
-    DECLARE PARAMETER alarmDuration IS 3.
-
-    IF NOT checkAudioInitialized() {
-        RETURN.
-    }.
-    IF audioTestState["active"] {
-        logMessage("Audio test already in progress.", "warning", TRUE, FALSE, TRUE).
-        RETURN.
-    }.
-
-    SET audioTestState["active"] TO TRUE.
-    SET audioTestState["full"] TO testName = "full".
-    SET audioTestState["mode"] TO testName.
-    IF testName = "full" {
-        SET audioTestState["mode"] TO "alerts".
-    }.
-    SET audioTestState["step"] TO 0.
-    SET audioTestState["alarmDuration"] TO alarmDuration.
-    SET audioTestState["nextTime"] TO TIME:SECONDS.
-}.
-
-DECLARE FUNCTION finishAudioTestSection {
-    DECLARE PARAMETER nextMode IS "".
-
-    IF nextMode = "" {
-        logMessage("Audio test complete.", "test", TRUE, FALSE, TRUE).
-        SET audioTestState["active"] TO FALSE.
-        SET audioTestState["mode"] TO "".
-    } ELSE {
-        SET audioTestState["mode"] TO nextMode.
-        SET audioTestState["step"] TO 0.
-        SET audioTestState["nextTime"] TO TIME:SECONDS + 0.5.
-    }.
-}.
-
-DECLARE FUNCTION processAudioTest {
-    IF NOT audioTestState["active"] OR TIME:SECONDS < audioTestState["nextTime"] {
-        RETURN.
-    }.
-
-    LOCAL mode IS audioTestState["mode"].
-    LOCAL step IS audioTestState["step"].
-    LOCAL delay IS 0.5.
-
-    IF mode = "alerts" {
-        IF step = 0 {
-            logMessage("Alert audio test.", "test", TRUE, FALSE, TRUE).
-        } ELSE IF step = 1 {
-            logMessage("Playing critical sound.", "test", TRUE, FALSE, TRUE).
-            playCriticalSound().
-            SET delay TO 2.
-        } ELSE IF step = 2 {
-            logMessage("Playing warning sound.", "test", TRUE, FALSE, TRUE).
-            playWarningSound().
-            SET delay TO 2.
-        } ELSE IF step = 3 {
-            logMessage("Playing alert sound.", "test", TRUE, FALSE, TRUE).
-            playAlertSound().
-            SET delay TO 2.
-        } ELSE {
-            LOCAL nextMode IS "".
-            IF audioTestState["full"] { SET nextMode TO "launch". }.
-            finishAudioTestSection(nextMode).
-            RETURN.
-        }.
-    } ELSE IF mode = "launch" {
-        IF step = 0 {
-            logMessage("Launch audio test.", "test", TRUE, FALSE, TRUE).
-        } ELSE IF step = 1 {
-            logMessage("Playing countdown sound.", "test", TRUE, FALSE, TRUE).
-            playCountdownSound().
-            SET delay TO 2.
-        } ELSE IF step = 2 {
-            logMessage("Playing launch sound.", "test", TRUE, FALSE, TRUE).
-            playLaunchSound().
-            SET delay TO 2.
-        } ELSE {
-            LOCAL nextMode IS "".
-            IF audioTestState["full"] { SET nextMode TO "alarms". }.
-            finishAudioTestSection(nextMode).
-            RETURN.
-        }.
-    } ELSE IF mode = "alarms" {
-        IF step = 0 {
-            logMessage("Detonation alarm test.", "test", TRUE, FALSE, TRUE).
-        } ELSE IF step = 1 {
-            logMessage("Playing detonation alarm.", "test", TRUE, FALSE, TRUE).
-            playDetonationAlarm(audioTestState["alarmDuration"]).
-            SET delay TO audioTestState["alarmDuration"].
-        } ELSE IF step = 2 {
-            logMessage("Engine failure alarm test.", "test", TRUE, FALSE, TRUE).
-        } ELSE IF step = 3 {
-            logMessage("Playing engine failure alarm.", "test", TRUE, FALSE, TRUE).
-            playEngineFailureAlarm(audioTestState["alarmDuration"]).
-            SET delay TO audioTestState["alarmDuration"].
-        } ELSE {
-            finishAudioTestSection().
-            RETURN.
-        }.
-    } ELSE {
-        SET audioTestState["active"] TO FALSE.
-        logMessage("Unknown audio test: " + mode + ".", "error", TRUE, FALSE, TRUE).
-        RETURN.
-    }.
-
-    SET audioTestState["step"] TO step + 1.
-    SET audioTestState["nextTime"] TO TIME:SECONDS + delay.
-}.
-
-WHEN audioTestState["active"] AND TIME:SECONDS >= audioTestState["nextTime"] THEN {
-    processAudioTest().
-    PRESERVE.
-}.
-
-
+// SETUP AND USEFUL FUNCTIONS
 DECLARE FUNCTION setupAudio {
-    DECLARE PARAMETER stopAlarmKey IS "#". // Key to stop alarm sounds when they are playing, set in armAlarmKeyStop().
-    DECLARE PARAMETER testAudio IS FALSE. // Set to true to run audio tests after setup.
+    DECLARE PARAMETER stopAlarmKey IS "#". // Set in armAlarmKeyStop()
+    DECLARE PARAMETER testAudio IS FALSE. // Runs tests after setup
 
     skipLine().
     logMessage("Initializing audio driver.", "audio", TRUE, FALSE, TRUE).
@@ -454,13 +336,15 @@ DECLARE FUNCTION setupAudio {
     logMessage("Audio driver online.", "audio", TRUE, FALSE, TRUE).
 
     IF testAudio {
-        requestAudioTest("full", 5).
+        fullAudioTest().
     } ELSE {
         skipLine().
     }.
 }.
 
-// Do not use this unless you know exactly why you need to bypass audio setup.
+// Skips audio setup, avoid
 DECLARE FUNCTION bypassAudioSetup {
     SET audioInitialized TO TRUE.
 }.
+// --------------------------------------------------------------
+// --------------------------------------------------------------

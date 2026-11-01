@@ -1,25 +1,23 @@
-// GUI THEME
-// Colours, sizes, and rich-text helpers. See docs/lib/gui/guiTheme.md.
+// EXPLAINATION
+// Colours, sizes and rich text helpers for the GUI
 // --------------------------------------------------------------
 
 // THEME CONFIGURATION
-// Colours are rich-text hex strings (RRGGBB or RRGGBBAA), consumed by colorText().
-// Palette matched to the COSMIC FLEET logo: black field, scarlet red, silver-white.
 GLOBAL guiTheme IS LEXICON().
-SET guiTheme["titleSize"] TO 20.       // Window title font size.
-SET guiTheme["headingSize"] TO 14.     // Section heading font size.
-SET guiTheme["captionWidth"] TO 150.   // Fixed pixel width of the caption column in status rows.
-SET guiTheme["captionColor"] TO "#b4bcc2".  // Silver - row captions (matches the logo's chrome).
-SET guiTheme["valueColor"] TO "#ffffff".    // Crisp white - live readouts.
-SET guiTheme["nominalColor"] TO "#66dd66".  // Green - all-good status.
-SET guiTheme["alertColor"] TO "#ffcc33".    // Amber - warning status.
-SET guiTheme["criticalColor"] TO "#ff4d4d". // Bright red - critical/alarm values.
-SET guiTheme["accentColor"] TO "#e01e26".   // Scarlet - headings & title (the logo's signature red).
-SET guiTheme["mutedColor"] TO "#6d757c".    // Cool grey - de-emphasised text.
+SET guiTheme["titleSize"] TO 20.
+SET guiTheme["headingSize"] TO 14.
+SET guiTheme["captionWidth"] TO 150.   // pixels
+SET guiTheme["captionColor"] TO "#b4bcc2".  // Silver
+SET guiTheme["valueColor"] TO "#ffffff".    // White
+SET guiTheme["nominalColor"] TO "#66dd66".  // Green
+SET guiTheme["alertColor"] TO "#ffcc33".    // Amber
+SET guiTheme["criticalColor"] TO "#ff4d4d". // Red
+SET guiTheme["accentColor"] TO "#e01e26".   // Scarlet
+SET guiTheme["mutedColor"] TO "#6d757c".    // Grey
 // --------------------------------------------------------------
 
 // RICH-TEXT HELPERS
-// Wrap text in a colour tag. colorHex is a name ("orange") or hex ("#ffaa00ff").
+// Wraps text in colour tag
 DECLARE FUNCTION colorText {
     DECLARE PARAMETER text.
     DECLARE PARAMETER colorHex.
@@ -27,14 +25,14 @@ DECLARE FUNCTION colorText {
     RETURN "<color=" + colorHex + ">" + text + "</color>".
 }.
 
-// Wrap text in a bold tag.
+// Wraps text in bold tag
 DECLARE FUNCTION boldText {
     DECLARE PARAMETER text.
 
     RETURN "<b>" + text + "</b>".
 }.
 
-// Wrap text in a size tag.
+// Wraps text in size tag
 DECLARE FUNCTION sizeText {
     DECLARE PARAMETER text.
     DECLARE PARAMETER fontSize.
@@ -42,14 +40,14 @@ DECLARE FUNCTION sizeText {
     RETURN "<size=" + fontSize + ">" + text + "</size>".
 }.
 
-// Pre-styled window title string.
+// Window title style
 DECLARE FUNCTION titleText {
     DECLARE PARAMETER text.
 
     RETURN sizeText(boldText(text), guiTheme["titleSize"]).
 }.
 
-// Pre-styled section heading string.
+// Section heading style
 DECLARE FUNCTION headingText {
     DECLARE PARAMETER text.
 
@@ -58,7 +56,7 @@ DECLARE FUNCTION headingText {
 // --------------------------------------------------------------
 
 // STATUS COLOURING
-// Map a log-style status key to a theme colour so GUI values match console tags.
+// Status key to theme colour
 DECLARE FUNCTION statusColor {
     DECLARE PARAMETER statusKey.
 
@@ -77,7 +75,7 @@ DECLARE FUNCTION statusColor {
     RETURN guiTheme["valueColor"].
 }.
 
-// Colour a value string according to a status key.
+// Colours text by status key
 DECLARE FUNCTION statusText {
     DECLARE PARAMETER text.
     DECLARE PARAMETER statusKey.
@@ -85,11 +83,7 @@ DECLARE FUNCTION statusText {
     RETURN colorText(text, statusColor(statusKey)).
 }.
 
-// Build a fixed-width text progress bar, e.g. "[####------]" (kOS has no native
-// bar/dial widget). pct is 0..100 (clamped); cells is the bar width in characters.
-// Returns a plain string - wrap it in statusText(...) to colour it, and set it into
-// a label with setWidgetText(). Swap the "#"/"-" glyphs below for block characters
-// ("█"/"░") if you prefer a solid gauge look.
+// Text progress bar, pct 0..100
 DECLARE FUNCTION barText {
     DECLARE PARAMETER pct.
     DECLARE PARAMETER cells IS 20.
@@ -109,4 +103,5 @@ DECLARE FUNCTION barText {
     }.
     RETURN "[" + bar + "]".
 }.
+// --------------------------------------------------------------
 

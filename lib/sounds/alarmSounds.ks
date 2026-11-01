@@ -1,4 +1,5 @@
-// Alarm tone definitions.
+// EXPLAINATION:
+// Alarm sounds that play until stopped.
 // --------------------------------------------------------------
 
 // ALARM TONES:

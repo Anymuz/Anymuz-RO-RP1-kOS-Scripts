@@ -20,7 +20,7 @@ DECLARE FUNCTION skipLine {
     }.
 }.
 
-// Pads single digit numbers with a leading zero for consistent time formatting.
+// Pads single digit numbers with a zero
 DECLARE FUNCTION pad2 {
     DECLARE PARAMETER number.
     SET number TO FLOOR(number).

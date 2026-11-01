@@ -1,14 +1,15 @@
-// LAUNCH PANEL
-// Launch command + countdown input. See docs/lib/gui/panels/launchPanel.md.
+// EXPLAINATION
+// Launch button with countdown input
 // --------------------------------------------------------------
 
+// Launch panel
 DECLARE FUNCTION buildLaunchPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "LAUNCH").
 
-    // Countdown slider -> launchCountdown.
+    // Countdown slider
     LOCAL row IS panel:ADDHLAYOUT().
     LOCAL caption IS row:ADDLABEL(colorText("Countdown", guiTheme["captionColor"])).
     SET caption:STYLE:WIDTH TO guiTheme["captionWidth"].
@@ -20,7 +21,7 @@ DECLARE FUNCTION buildLaunchPanel {
         SET launchCountdown TO ROUND(newValue).
     }.
 
-    // Typed entry -> launchCountdown, and nudge the slider to match.
+    // Typed countdown, moves slider to match
     guiAddNumberField(panel, "Countdown (s)", launchCountdown, {
         PARAMETER newSeconds.
         SET launchCountdown TO newSeconds.
@@ -32,12 +33,11 @@ DECLARE FUNCTION buildLaunchPanel {
 
     guiAddButton(panel, "LAUNCH", commandLaunch@).
 
-    // GUI-side countdown clock. Derived entirely from state the GUI can already
-    // see (launchCommanded, launchCountdown, flightData) - no lib changes.
+    // GUI side countdown clock
     LOCAL clock IS LEXICON("running", FALSE, "startTime", 0).
 
     registerUpdater({
-        // Start our clock on the rising edge of the LAUNCH command; reset when idle.
+        // Clock starts when launch is commanded
         IF launchCommanded AND NOT clock["running"] {
             SET clock["running"] TO TRUE.
             SET clock["startTime"] TO TIME:SECONDS.

@@ -1,3 +1,7 @@
+// EXPLAINATION
+// Manual audio test script.
+// --------------------------------------------------------------
+
 RUNONCEPATH("0:/lib/logging.ks").
 RUNONCEPATH("0:/lib/audio.ks").
 
