@@ -1,43 +1,21 @@
-// RP-1 procedural avionics experiment helpers.
-// Only true Experiment modules are considered science modules.
-// Blank underscore events are placeholders and must be ignored.
-//
-// Toggling uses the module's "start: <name>" / "stop: <name>" ACTIONS, not its
-// EVENT captions: KSP only populates an experiment's EVENT text after the
-// player has interacted with the part's PAW in-game, but the ACTIONS are
-// present and correctly named from the moment the vessel loads. Discovery
-// (listAvailableExperiments) reads EVENTS only to test whether a slot is
-// equipped (a "_" event means no matching sensor); the experiment's actual
-// name/toggle key always comes from its "start: <name>" ACTION instead, since
-// the EVENT caption text carries a volatile state suffix (e.g. "pressure
-// scan: stopped") that changes as the experiment runs and must never be used
-// as an identifier. Telemetry analysis is guaranteed on every avionics core,
-// so it is always offered even before its own event has loaded.
-//
-// The Experiment module exposes no queryable ACTIVE field (confirmed against
-// a real logs/partDumpSaved.txt dump - only ACTION/EVENT, no FIELD entries),
-// so kOS has no way to ask KSP whether an experiment is currently running.
-// Enabled state is therefore tracked locally in experimentEnabledState and
-// only changes when toggleExperimentEvent successfully fires an action.
-//
-// Example:
-//   RUNONCEPATH("0:/lib/science.ks").
-//   LOCAL experimentList IS listAvailableExperiments().
-//   toggleExperimentEvent(telemetryExperimentName).
-//   LOCAL state IS refreshExperimentState(experimentList).
+// EXPLAINATION
+// RP-1 avionics experiment helpers, toggled by start:/stop: actions.
+// --------------------------------------------------------------
 
+// SCIENCE EXPERIMENTS
 GLOBAL telemetryExperimentName IS "telemetry analysis".
 
-// Local mirror of each experiment's enabled state, keyed by lowercase name -
-// the only source of truth, since the game exposes no readable state field.
+// Enabled state kept locally, the game has no readable field
 GLOBAL experimentEnabledState IS LEXICON().
 
+// TRUE if event is a real one
 DECLARE FUNCTION isValidExperimentEvent {
     DECLARE PARAMETER eventName.
 
     RETURN NOT (eventName = "" OR eventName = "_" OR eventName:TOLOWER() = "_").
 }. 
 
+// TRUE if ship has any experiment
 DECLARE FUNCTION shipHasExperiments {
     FOR part IN SHIP:PARTS {
         FOR idx IN RANGE(0, part:MODULES:LENGTH) {
@@ -49,6 +27,7 @@ DECLARE FUNCTION shipHasExperiments {
     RETURN FALSE.
 }.
 
+// Lists equipped experiments, toggle telemetry first to reveal the rest
 DECLARE FUNCTION listAvailableExperiments {
     LOCAL results IS LIST().
     LOCAL seen IS LEXICON().
@@ -58,12 +37,7 @@ DECLARE FUNCTION listAvailableExperiments {
             LOCAL moduleRef IS part:GETMODULEBYINDEX(idx).
 
             IF moduleRef:NAME:TOLOWER() = "experiment" {
-                // EVENTS are only used to test whether this slot is equipped
-                // (blank "_" = no matching sensor) - their caption text also
-                // carries a volatile state suffix ("pressure scan: stopped")
-                // that changes as the experiment runs, so it must never be
-                // used as the experiment's name/toggle key. The real, stable
-                // name comes from the "start: <name>" ACTION instead.
+                // Events only show if slot is equipped, name comes from start: action
                 LOCAL isEquipped IS FALSE.
                 FOR currentEvent IN moduleRef:ALLEVENTNAMES {
                     IF isValidExperimentEvent(currentEvent) {
@@ -94,6 +68,7 @@ DECLARE FUNCTION listAvailableExperiments {
     RETURN results.
 }. 
 
+// Starts or stops an experiment
 DECLARE FUNCTION toggleExperimentEvent {
     DECLARE PARAMETER eventName.
 
@@ -127,6 +102,7 @@ DECLARE FUNCTION toggleExperimentEvent {
     RETURN FALSE.
 }. 
 
+// TRUE if experiment is running
 DECLARE FUNCTION getExperimentEnabled {
     DECLARE PARAMETER eventName.
 
@@ -139,9 +115,10 @@ DECLARE FUNCTION getExperimentEnabled {
         RETURN experimentEnabledState[key].
     }.
 
-    RETURN FALSE. // Not toggled yet this session - experiments start stopped.
+    RETURN FALSE.
 }. 
 
+// Enabled state for each experiment in list
 DECLARE FUNCTION refreshExperimentState {
     DECLARE PARAMETER experimentList.
 
@@ -153,16 +130,4 @@ DECLARE FUNCTION refreshExperimentState {
 
     RETURN state.
 }. 
-
-// GUI flow:
-//   1) listAvailableExperiments() always offers telemetryExperimentName, plus any
-//      other experiment whose EVENT caption has already loaded.
-//   2) toggleExperimentEvent(name) fires the module's start:/stop: ACTION, so it
-//      works even before that experiment's own EVENT caption has loaded, and
-//      records the resulting state in experimentEnabledState.
-//   3) once telemetry reads enabled, call listAvailableExperiments() again - the
-//      interaction that started it loads the other real experiments' EVENT
-//      captions too, so previously-hidden ones now appear in the list.
-//   4) refreshExperimentState(list) / getExperimentEnabled(name) just read back
-//      experimentEnabledState each updater tick - there is no in-game field to
-//      re-query, so this local mirror is the only source of truth.
+// --------------------------------------------------------------

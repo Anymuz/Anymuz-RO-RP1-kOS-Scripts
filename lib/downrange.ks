@@ -17,7 +17,7 @@ DECLARE FUNCTION clampValue {
     }.
 
     RETURN value.
-}. // Tries to hold the vehicle on calculated course
+}. // Keeps a value between min and max
 
 DECLARE FUNCTION calculateDownrangePitch {
     DECLARE PARAMETER turnStartAlt IS 0.
@@ -41,8 +41,7 @@ DECLARE FUNCTION calculateDownrangePitch {
         RETURN 90.
     }.
 
-    // Phase 1:
-    // Immediate visible kick from vertical to kickPitch.
+    // Phase 1: kick to kickPitch
     IF ALTITUDE < kickEndAlt {
 
         LOCAL kickProgress IS (ALTITUDE - turnStartAlt) / (kickEndAlt - turnStartAlt).
@@ -51,13 +50,11 @@ DECLARE FUNCTION calculateDownrangePitch {
         RETURN 90 - ((90 - kickPitch) * kickProgress).
     }.
 
-    // Phase 2:
-    // Continue from kickPitch down to finalPitch.
+    // Phase 2: kickPitch down to finalPitch
     LOCAL rawProgress IS (ALTITUDE - kickEndAlt) / (turnEndAlt - kickEndAlt).
     LOCAL progress IS clampValue(rawProgress, 0, 1).
 
-    // turnShape below 1 = more aggressive early turn.
-    // turnShape above 1 = holds steeper for longer.
+    // turnShape below 1 turns earlier, above 1 holds steeper longer
     LOCAL curvedProgress IS progress ^ turnShape.
 
     LOCAL targetPitch IS kickPitch - ((kickPitch - finalPitch) * curvedProgress).

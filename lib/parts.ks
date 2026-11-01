@@ -1,20 +1,16 @@
-// PARTS
-// * Activate parts directly by kOS tag through their own module actions/events,
-//   so behaviour no longer depends on staging order.
-// * Every call is guarded: it only acts when the tagged part exists AND actually
-//   exposes the requested action/event - it can never trigger something the part
-//   doesn't advertise.
-// * Run boot/partDump.ks to discover the exact action/event names to pass here.
+// EXPLAINATION
+// Fires tagged part actions and events directly, names from boot/partDump.ks
 // --------------------------------------------------------------
 
-// TRUE if any part carries this tag.
+// PART CHECKS
+// TRUE if tag exists
 DECLARE FUNCTION taggedPartsExist {
     DECLARE PARAMETER partTag.
 
     RETURN SHIP:PARTSTAGGED(partTag):LENGTH > 0.
 }.
 
-// TRUE if the part has a module exposing actionName.
+// TRUE if part has the action
 DECLARE FUNCTION partHasAction {
     DECLARE PARAMETER part.
     DECLARE PARAMETER actionName.
@@ -27,7 +23,7 @@ DECLARE FUNCTION partHasAction {
     RETURN FALSE.
 }.
 
-// TRUE if the part has a module exposing eventName.
+// TRUE if part has the event
 DECLARE FUNCTION partHasEvent {
     DECLARE PARAMETER part.
     DECLARE PARAMETER eventName.
@@ -39,8 +35,10 @@ DECLARE FUNCTION partHasEvent {
     }.
     RETURN FALSE.
 }.
+// --------------------------------------------------------------
 
-// Fire actionName on one part (first module that has it). Returns TRUE if fired.
+// SINGLE PART ACTIONS
+// Fires an action on one part
 DECLARE FUNCTION doPartAction {
     DECLARE PARAMETER part.
     DECLARE PARAMETER actionName.
@@ -56,7 +54,7 @@ DECLARE FUNCTION doPartAction {
     RETURN FALSE.
 }.
 
-// Fire eventName on one part (first module that has it). Returns TRUE if fired.
+// Fires an event on one part
 DECLARE FUNCTION doPartEvent {
     DECLARE PARAMETER part.
     DECLARE PARAMETER eventName.
@@ -70,9 +68,10 @@ DECLARE FUNCTION doPartEvent {
     }.
     RETURN FALSE.
 }.
+// --------------------------------------------------------------
 
-// Fire actionName on every part tagged partTag. Returns the count acted on.
-// Warns (does nothing else) if the tag matched nothing or the parts lack the action.
+// TAGGED PART ACTIONS
+// Fires an action on every tagged part
 DECLARE FUNCTION doTaggedAction {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER actionName.
@@ -97,7 +96,7 @@ DECLARE FUNCTION doTaggedAction {
     RETURN done.
 }.
 
-// Fire eventName on every part tagged partTag. Returns the count acted on.
+// Fires an event on every tagged part
 DECLARE FUNCTION doTaggedEvent {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER eventName.
@@ -120,11 +119,10 @@ DECLARE FUNCTION doTaggedEvent {
     }.
     RETURN done.
 }.
+// --------------------------------------------------------------
 
-// Find every part tagged partTag that exposes actionName and return its
-// PartModule (not yet fired). Pairs with igniteResolvedModules so a caller can
-// resolve everything ahead of time, then fire with nothing else in between -
-// see igniteResolvedModules for why that matters for multi-part ignition.
+// SIMULTANEOUS IGNITION
+// Finds action modules ahead of time
 DECLARE FUNCTION resolveTaggedActionModules {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER actionName.
@@ -142,14 +140,7 @@ DECLARE FUNCTION resolveTaggedActionModules {
     RETURN found.
 }.
 
-// Fire actionName on every already-resolved module (from resolveTaggedActionModules)
-// back-to-back, with the instruction budget raised so the whole batch can't be
-// split across physics ticks by kOS's IPU limit - the straggler that causes an
-// unstable symmetric cluster (e.g. one of four boosters lighting a beat late)
-// comes from per-part module scanning eating into that per-tick budget, not
-// from anything KSP itself does. Resolving modules ahead of time and firing
-// them here, with IPU raised, keeps the actual DOACTION calls as close to
-// simultaneous as kOS can make them.
+// Fires found modules together, same tick
 DECLARE FUNCTION igniteResolvedModules {
     DECLARE PARAMETER modules.
     DECLARE PARAMETER actionName.
@@ -165,4 +156,5 @@ DECLARE FUNCTION igniteResolvedModules {
     SET CONFIG:IPU TO previousIPU.
     RETURN modules:LENGTH.
 }.
+// --------------------------------------------------------------
 

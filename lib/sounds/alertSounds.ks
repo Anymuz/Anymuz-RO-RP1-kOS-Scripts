@@ -1,5 +1,5 @@
 // EXPLAINATION
-// * This library defines alert single not tones for various types of console alert output
+// Single note tones for console alerts.
 // --------------------------------------------------------------
 
 // INITALIZATION

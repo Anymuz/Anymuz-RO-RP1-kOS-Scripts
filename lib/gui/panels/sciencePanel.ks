@@ -1,14 +1,9 @@
 // EXPLAINATION
-// * GUI panel: toggle RP-1 procedural avionics science experiments.
-// * Telemetry has its own permanent row/button - it is never discovered, just
-//   assumed present. Pressing it is what triggers the one scan for the rest of
-//   the ship's experiments (their EVENT captions only load after an interaction).
-// * Depends on lib/gui/guiCore.ks, lib/gui/guiTheme.ks, lib/science.ks.
+// Science experiment toggles, telemetry reveals the rest
 // --------------------------------------------------------------
 
-// Add one experiment's row: caption, ON/OFF status (registered under its own
-// widget name), and a toggle button. A separate function per row gives the
-// button's inline delegate its own captured expName, so this is loop-safe.
+// SCIENCE PANEL
+// Experiment row with toggle
 DECLARE FUNCTION addExperimentRow {
     DECLARE PARAMETER panel.
     DECLARE PARAMETER expName.
@@ -28,14 +23,13 @@ DECLARE FUNCTION addExperimentRow {
     guiAddButton(row, "Toggle", { toggleExperimentEvent(expName). }).
 }.
 
+// Science panel, other experiments added after telemetry toggle
 DECLARE FUNCTION buildSciencePanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 
     LOCAL panel IS parentBox:ADDVBOX().
     guiAddHeading(panel, "SCIENCE").
 
-    // Nothing is discovered yet - only the guaranteed telemetry row exists
-    // until the pilot presses its button.
     LOCAL found IS LIST().
 
     LOCAL telemetryRow IS panel:ADDHLAYOUT().
@@ -50,8 +44,6 @@ DECLARE FUNCTION buildSciencePanel {
     guiAddButton(telemetryRow, "Toggle Telemetry", {
         toggleExperimentEvent(telemetryExperimentName).
 
-        // Toggling telemetry is what loads the rest of the ship's experiment
-        // EVENT captions - scan for them now and add any not already shown.
         FOR expName IN listAvailableExperiments() {
             IF expName <> telemetryExperimentName AND NOT found:CONTAINS(expName) {
                 found:ADD(expName).
@@ -79,3 +71,4 @@ DECLARE FUNCTION buildSciencePanel {
 
     RETURN panel.
 }.
+// --------------------------------------------------------------

@@ -1,47 +1,42 @@
-// GUI CORE
-// Window lifecycle, named-widget registry, timed refresh. See docs/lib/gui/.
+// EXPLAINATION
+// Window lifecycle, widget registry and timed refresh for the GUI
 // --------------------------------------------------------------
 
 // CONFIGURATION
-// Default window geometry and refresh cadence. Override before createGuiWindow().
 GLOBAL guiConfig IS LEXICON().
-SET guiConfig["x"] TO 350.             // Window X (negative = from right edge).
-SET guiConfig["y"] TO 250.             // Window Y (negative = from bottom edge).
-SET guiConfig["width"] TO 440.         // Window width in pixels (height auto-sizes).
-SET guiConfig["refreshInterval"] TO 0.5. // Seconds between label refreshes.
-SET guiConfig["logo"] TO "docs/images/flag".  // Brand image, archive-relative PNG (no "0:/", no ".png"). "" = none.
-SET guiConfig["logoMode"] TO "header". // "header" = fixed-size image at the top; "background" = stretched behind the whole window; "off" = hidden.
-SET guiConfig["logoAlign"] TO "CENTER". // Header mode only: "LEFT", "CENTER" or "RIGHT".
-SET guiConfig["logoWidth"] TO 360.     // Header-mode logo width in pixels (logo is ~1.64:1, so height tracks this).
-SET guiConfig["logoHeight"] TO 220.    // Header-mode logo height in pixels.
-SET guiConfig["background"] TO "".     // Optional window background image (archive-relative PNG). "" = none, unless logoMode is "background" (then the logo is used).
-SET guiConfig["engineTag"] TO "U-1250". // Part tag the engine panel reads (set to your main-engine tag).
-SET guiConfig["manualDestruct"] TO TRUE. // Show the RECOVERY SELF DESTRUCT button. A ship/family sets this (default TRUE - assume the pilot can always command a destruct).
+SET guiConfig["x"] TO 350.             // pixels, negative = from right
+SET guiConfig["y"] TO 250.             // pixels, negative = from bottom
+SET guiConfig["width"] TO 440.         // pixels
+SET guiConfig["refreshInterval"] TO 0.5. // seconds
+SET guiConfig["logo"] TO "docs/images/flag".  // archive-relative PNG, no ".png"
+SET guiConfig["logoMode"] TO "header". // "header", "background" or "off"
+SET guiConfig["logoAlign"] TO "CENTER". // "LEFT", "CENTER" or "RIGHT"
+SET guiConfig["logoWidth"] TO 360.     // pixels
+SET guiConfig["logoHeight"] TO 220.    // pixels
+SET guiConfig["background"] TO "".     // archive-relative PNG, "" = none
+SET guiConfig["engineTag"] TO "U-1250". // Main engine tag
+SET guiConfig["manualDestruct"] TO TRUE. // Shows the SELF DESTRUCT button
 // --------------------------------------------------------------
 
 // EDITABLE MISSION PARAMETERS
-// A shared bag of tunables. Populate it from your ship script (after loading the
-// GUI), then bind an editable field to a key with guiAddParamField on the panel
-// that manages that system, and read guiParams["..."] where needed. There is no
-// generic PARAMS tab - editable inputs live on their own system's panel.
+// Shared tunables, bind fields with guiAddParamField
 GLOBAL guiParams IS LEXICON().
 // --------------------------------------------------------------
 
 // STATE
-// Live handles for the current window. Managed by the functions below.
 GLOBAL guiState IS LEXICON().
-SET guiState["window"] TO 0.           // The GUI() window, or 0 when none exists.
-SET guiState["created"] TO FALSE.      // TRUE once a window has been built.
-SET guiState["visible"] TO FALSE.      // TRUE while the window is shown.
-SET guiState["widgets"] TO LEXICON().  // Named value widgets to update each refresh.
-SET guiState["updaters"] TO LIST().    // Delegates run on every refresh.
-SET guiState["refreshInstalled"] TO FALSE. // TRUE once the WHEN trigger exists.
-SET guiState["refreshArmed"] TO FALSE. // Gates whether the refresh trigger runs.
-SET guiState["nextRefresh"] TO 0.      // TIME:SECONDS of the next scheduled refresh.
+SET guiState["window"] TO 0.           // 0 when no window
+SET guiState["created"] TO FALSE.
+SET guiState["visible"] TO FALSE.
+SET guiState["widgets"] TO LEXICON().
+SET guiState["updaters"] TO LIST().
+SET guiState["refreshInstalled"] TO FALSE.
+SET guiState["refreshArmed"] TO FALSE.
+SET guiState["nextRefresh"] TO 0.      // TIME:SECONDS
 // --------------------------------------------------------------
 
 // WINDOW LIFECYCLE
-// Build a fresh, empty window. Disposes any existing one first.
+// Builds a fresh empty window
 DECLARE FUNCTION createGuiWindow {
     DECLARE PARAMETER windowTitle IS "kOS MISSION CONTROL".
     DECLARE PARAMETER width IS guiConfig["width"].
@@ -57,8 +52,7 @@ DECLARE FUNCTION createGuiWindow {
     SET guiState["window"]:Y TO guiConfig["y"].
     SET guiState["window"]:DRAGGABLE TO TRUE.
 
-    // Background image: an explicit one, or the logo itself when logoMode is
-    // "background". Stretched behind the whole window via the window's style.
+    // Background image
     LOCAL bgImage IS guiConfig["background"].
     IF bgImage = "" AND guiConfig["logoMode"] = "background" {
         SET bgImage TO guiConfig["logo"].
@@ -67,10 +61,7 @@ DECLARE FUNCTION createGuiWindow {
         SET guiState["window"]:STYLE:BG TO bgImage.
     }.
 
-    // Header logo: a fixed-size branding image at the top. Skipped when the logo
-    // is being used as the background, or when turned off / unset. A fixed-width
-    // image can't be centered via ALIGN alone, so flank it with flexible spacers
-    // instead - the standard kOS trick for positioning a fixed-size widget.
+    // Header logo, spacers either side to position it
     IF guiConfig["logo"] <> "" AND guiConfig["logoMode"] = "header" {
         LOCAL logoRow IS guiState["window"]:ADDHLAYOUT().
         IF guiConfig["logoAlign"] <> "LEFT" { guiSpacer(-1, logoRow). }.
@@ -85,7 +76,7 @@ DECLARE FUNCTION createGuiWindow {
     RETURN guiState["window"].
 }.
 
-// Show the current window and start counting refreshes as visible.
+// Shows the window
 DECLARE FUNCTION showGui {
     IF guiState["created"] {
         guiState["window"]:SHOW().
@@ -93,7 +84,7 @@ DECLARE FUNCTION showGui {
     }.
 }.
 
-// Hide the current window without destroying it.
+// Hides the window
 DECLARE FUNCTION hideGui {
     IF guiState["created"] {
         guiState["window"]:HIDE().
@@ -101,7 +92,7 @@ DECLARE FUNCTION hideGui {
     }.
 }.
 
-// Hide and destroy the current window, clearing all registered widgets/updaters.
+// Destroys the window and clears widgets and updaters
 DECLARE FUNCTION disposeGui {
     IF guiState["created"] {
         guiState["window"]:HIDE().
@@ -117,7 +108,7 @@ DECLARE FUNCTION disposeGui {
 // --------------------------------------------------------------
 
 // WIDGET REGISTRY
-// Store a widget under a name so updaters can address it by string key.
+// Stores a widget under a name
 DECLARE FUNCTION registerWidget {
     DECLARE PARAMETER widgetName.
     DECLARE PARAMETER widget.
@@ -126,7 +117,7 @@ DECLARE FUNCTION registerWidget {
     RETURN widget.
 }.
 
-// Set the TEXT of a registered widget. Silently ignores unknown names.
+// Sets text on a registered widget
 DECLARE FUNCTION setWidgetText {
     DECLARE PARAMETER widgetName.
     DECLARE PARAMETER text.
@@ -136,7 +127,7 @@ DECLARE FUNCTION setWidgetText {
     }.
 }.
 
-// Register a delegate (named or anonymous) to be called on every refresh.
+// Adds a delegate run every refresh
 DECLARE FUNCTION registerUpdater {
     DECLARE PARAMETER updater.
 
@@ -145,7 +136,7 @@ DECLARE FUNCTION registerUpdater {
 // --------------------------------------------------------------
 
 // WIDGET FACTORIES
-// Add a section heading label to a box.
+// Section heading label
 DECLARE FUNCTION guiAddHeading {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER text.
@@ -156,8 +147,7 @@ DECLARE FUNCTION guiAddHeading {
     RETURN headingLabel.
 }.
 
-// Add a custom image (a PNG in the Archive/Ships/Script volume). The ".png"
-// extension is optional. width/height fix the on-screen size in pixels.
+// Image from archive PNG
 DECLARE FUNCTION guiAddImage {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER imagePath.
@@ -172,8 +162,7 @@ DECLARE FUNCTION guiAddImage {
     RETURN picture.
 }.
 
-// Add a "caption : value" row. The value label is registered under widgetName
-// so it can be updated later with setWidgetText(widgetName, ...).
+// Caption and value row
 DECLARE FUNCTION guiAddStatusRow {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -194,11 +183,7 @@ DECLARE FUNCTION guiAddStatusRow {
     RETURN valueLabel.
 }.
 
-// Add a self-updating "caption : [bar] pct%" gauge row in one call. valueDelegate
-// is a no-argument delegate returning the current percentage (0..100); it is polled
-// every refresh (so it must not WAIT). The bar auto-colours NOMINAL/WARNING/CRITICAL
-// as the value falls below warnBelow / critBelow. cells sets the bar width. Returns
-// the bar label. Uses barText()/statusText() from guiTheme.ks.
+// Self updating bar row, delegate returns 0..100
 DECLARE FUNCTION guiAddBar {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -228,7 +213,7 @@ DECLARE FUNCTION guiAddBar {
     RETURN barLabel.
 }.
 
-// Add a click button wired to a no-argument delegate (callback technique).
+// Button with click delegate
 DECLARE FUNCTION guiAddButton {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER text.
@@ -239,7 +224,7 @@ DECLARE FUNCTION guiAddButton {
     RETURN button.
 }.
 
-// Add a checkbox (toggle) wired to a one-Boolean-argument delegate.
+// Checkbox with toggle delegate
 DECLARE FUNCTION guiAddToggle {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER text.
@@ -251,9 +236,7 @@ DECLARE FUNCTION guiAddToggle {
     RETURN toggle.
 }.
 
-// Add a guarded action: an ARM checkbox next to a button. The onFire delegate
-// (no args) runs only if ARM is ticked, and ARM auto-clears after firing. Use
-// this for consequential actions so a stray single click cannot trigger them.
+// Button that only fires when ARM is ticked
 DECLARE FUNCTION guiAddArmedAction {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER label.
@@ -271,9 +254,7 @@ DECLARE FUNCTION guiAddArmedAction {
     RETURN fireButton.
 }.
 
-// Bind a number field to a lexicon key: shows lex[key], writes the typed number
-// back into lex[key] on confirm. Wrapping the binding in this function gives each
-// field its own captured key, so it is safe to call in a loop.
+// Number field bound to a lexicon key
 DECLARE FUNCTION guiAddParamField {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -286,7 +267,7 @@ DECLARE FUNCTION guiAddParamField {
     }).
 }.
 
-// Bind a checkbox to a Boolean lexicon key.
+// Checkbox bound to a Boolean lexicon key
 DECLARE FUNCTION guiAddParamToggle {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -299,26 +280,25 @@ DECLARE FUNCTION guiAddParamToggle {
     }).
 }.
 
-// Add a tab strip. tabNames is a LIST of strings. Returns a LEXICON mapping each
-// name to its content box - build panels into pages[name]. One tab shows at a time.
+// Tab strip, returns lexicon of name to content box
 DECLARE FUNCTION guiAddTabs {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER tabNames.
 
     LOCAL tabRow IS parentBox:ADDHLAYOUT().
     LOCAL content IS parentBox:ADDVLAYOUT().
-    LOCAL pages IS LEXICON().   // name -> vertical content box (what the caller builds into)
-    LOCAL stacks IS LEXICON().  // name -> the stack box SHOWONLY toggles
+    LOCAL pages IS LEXICON().
+    LOCAL stacks IS LEXICON().  // what SHOWONLY toggles
 
     FOR tabName IN tabNames {
-        LOCAL page IS content:ADDSTACK().          // stacked boxes share the same space
-        LOCAL inner IS page:ADDVLAYOUT().          // force vertical layout inside the tab
+        LOCAL page IS content:ADDSTACK().
+        LOCAL inner IS page:ADDVLAYOUT().
         SET stacks[tabName] TO page.
         SET pages[tabName] TO inner.
-        tabRow:ADDRADIOBUTTON(tabName, tabName = tabNames[0]). // first tab starts selected
+        tabRow:ADDRADIOBUTTON(tabName, tabName = tabNames[0]).
     }.
 
-    // One callback for the whole strip: show the page whose name matches the click.
+    // Show page matching the click
     SET tabRow:ONRADIOCHANGE TO {
         PARAMETER whichButton.
         content:SHOWONLY(stacks[whichButton:TEXT]).
@@ -328,8 +308,7 @@ DECLARE FUNCTION guiAddTabs {
     RETURN pages.
 }.
 
-// Add a "caption : [text box]" row. onConfirm is a delegate(String) fired when
-// the user presses Enter or leaves the field. Returns the TextField.
+// Text field row, delegate gets the string
 DECLARE FUNCTION guiAddTextField {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -347,9 +326,7 @@ DECLARE FUNCTION guiAddTextField {
     RETURN field.
 }.
 
-// Add a numeric input row. Like guiAddTextField but parses the entry to a number
-// (falling back to initialValue if the text is not a number). onConfirm is a
-// delegate(number). Returns the TextField.
+// Number field row, delegate gets the number
 DECLARE FUNCTION guiAddNumberField {
     DECLARE PARAMETER parentBox.
     DECLARE PARAMETER caption.
@@ -370,7 +347,7 @@ DECLARE FUNCTION guiAddNumberField {
     RETURN field.
 }.
 
-// Add blank spacing (pixels; -1 = flexible) to a box for layout breathing room.
+// Blank space, -1 is flexible
 DECLARE FUNCTION guiSpacer {
     DECLARE PARAMETER size IS 5.
     DECLARE PARAMETER parentBox IS guiState["window"].
@@ -380,7 +357,7 @@ DECLARE FUNCTION guiSpacer {
 // --------------------------------------------------------------
 
 // REFRESH LOOP
-// Run every registered updater once. Skipped while the window is hidden.
+// Runs every updater, skipped while hidden
 DECLARE FUNCTION refreshGui {
     IF NOT guiState["created"] OR NOT guiState["visible"] {
         RETURN.
@@ -391,8 +368,7 @@ DECLARE FUNCTION refreshGui {
     }.
 }.
 
-// Arm a timed WHEN trigger that calls refreshGui() every interval seconds.
-// The trigger is installed once; re-arming only updates the interval.
+// Arms timed refresh, trigger installed once
 DECLARE FUNCTION armGuiRefresh {
     DECLARE PARAMETER interval IS guiConfig["refreshInterval"].
 
@@ -412,7 +388,7 @@ DECLARE FUNCTION armGuiRefresh {
     }.
 }.
 
-// Stop the refresh trigger from running (it stays installed but dormant).
+// Stops the refresh trigger
 DECLARE FUNCTION disarmGuiRefresh {
     SET guiState["refreshArmed"] TO FALSE.
 }.

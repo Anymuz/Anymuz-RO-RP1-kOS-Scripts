@@ -2,8 +2,8 @@
 // * For tracking and monitoring flight and engine
 // --------------------------------------------------------------
 
-// FUNCTIONS
-// Constantly storing flight statistics throughout the flight in universal flightData lexicon.
+// FLIGHT TRACKING
+// Stores flight stats in flightData
 DECLARE FUNCTION trackFlightStats {
     // UNTIL flightData["descentCaptured"] {
     WHEN TRUE THEN  {
@@ -28,11 +28,13 @@ DECLARE FUNCTION trackFlightStats {
         PRESERVE.
     }.
 }.
+// --------------------------------------------------------------
 
-// Engine performance and status monitoring system, correct parameters required for safe monitoring.
+// ENGINE MONITORING
+// Watches engine for failures
 DECLARE FUNCTION monitorEngines {
     DECLARE PARAMETER engineTag IS "U-1250".
-    DECLARE PARAMETER remainingFuelPercentage IS 2. // Expected tank fill % remaining at natural engine cutoff.
+    DECLARE PARAMETER remainingFuelPercentage IS 2. // % left at cutoff
     DECLARE PARAMETER fuelTank IS "HPSFT".
     DECLARE PARAMETER spoolupTime IS 0.13.
 
@@ -44,12 +46,12 @@ DECLARE FUNCTION monitorEngines {
     LOCAL thrustLossReported IS FALSE.
     LOCAL engineOfflineReported IS FALSE.
 
-    LOCAL startupGrace IS MAX(spoolupTime, 0.7).// Minimum forthrust buildup, prevents false reports failure detection.
+    LOCAL startupGrace IS MAX(spoolupTime, 0.7). // seconds
     LOCAL thrustSeen IS FALSE.
     LOCAL thrustStartTime IS 0.
 
     WHEN TRUE THEN {
-        LOCAL engines IS SHIP:PARTSTAGGED(engineTag). // BOOLEAN value foto determine ignited engines
+        LOCAL engines IS SHIP:PARTSTAGGED(engineTag).
         FOR engine IN engines {
             // Fuel Check
             LOCAL hasFuel IS FALSE.
@@ -90,7 +92,7 @@ DECLARE FUNCTION monitorEngines {
                 SET flameoutReported TO TRUE.
             }.
 
-            // Thrust loss failure (below 50%)
+            // Thrust loss failure (below 85%)
             LOCAL thrustReady IS thrustSeen AND TIME:SECONDS > thrustStartTime + startupGrace.
             LOCAL thrustLow IS engine:MAXTHRUST > 0 AND engine:THRUST < (engine:MAXTHRUST * 0.85) AND engine:THRUST > 0.
             IF hasFuel AND thrustReady AND thrustLow AND NOT thrustLossReported {
@@ -101,7 +103,7 @@ DECLARE FUNCTION monitorEngines {
                 SET thrustLossReported TO TRUE.
             }.
 
-            // Inform engine offline if failures that suggest engine is not producing thrust.
+            // Engine offline
             IF (ignitionFailureReported OR engineFailureReported OR flameoutReported) AND NOT engineOfflineReported {
                 logMessage("Main engine offline.", "offline", TRUE, FALSE, TRUE).
                 SET engineOfflineReported TO TRUE.

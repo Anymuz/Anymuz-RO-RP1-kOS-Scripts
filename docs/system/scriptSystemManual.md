@@ -23,7 +23,7 @@ At a high level it does five jobs:
 2. Work out which ship is currently loaded.
 3. Load the correct ship entry script for that vessel.
 4. Reuse shared libraries for launch, tracking, audio, logging, destruct,
-   parachutes, staging, and GUI.
+   parachutes, apogee events, and GUI.
 5. Keep ship-specific decisions near the ship while keeping reusable behavior in
    shared libraries.
 
@@ -451,7 +451,7 @@ Core pieces:
 - `commandLaunch()` sets a flag used by GUI or action-based launch release.
 - `initializeLaunch()` waits for either a keypress or a launch command.
 - `countdownLaunch()` performs the countdown and audio.
-- `launchShip()` actually stages and transitions the flight phase.
+- `launchShip()` fires the tagged part actions (engines, then clamp) and transitions the flight phase.
 
 Notice what this library does not know:
 

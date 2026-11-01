@@ -1,24 +1,30 @@
-// Raw part/module/action/event/field dump with explicit science/sensor probes.
-// Uses GETMODULEBYINDEX because duplicate module names like Experiment are common in RP-1/Kerbalism.
-// Run from the kOS terminal: RUNPATH("0:/boot/partDump.ks").
+// EXPLAINATION
+// Dumps parts, modules, actions and events to a log file
+// --------------------------------------------------------------
 
+// OUTPUT HELPERS
 LOCAL outFile IS "0:/logs/partDump.txt".
 
 IF EXISTS(outFile) {
     DELETEPATH(outFile).
 }.
 
+// Log file and terminal
 DECLARE FUNCTION dumpLine {
     DECLARE PARAMETER text.
     LOG text TO outFile.
     PRINT text.
 }.
 
+// Log file only
 DECLARE FUNCTION dumpFile {
     DECLARE PARAMETER text.
     LOG text TO outFile.
 }.
+// --------------------------------------------------------------
 
+// MODULE DETAILS
+// Dump one module's actions, events and fields
 DECLARE FUNCTION dumpModuleDetails {
     DECLARE PARAMETER partRef.
     DECLARE PARAMETER moduleIndex.
@@ -90,6 +96,7 @@ DECLARE FUNCTION dumpModuleDetails {
         }.
     }
 
+    // Tries likely field names
     IF moduleName = "Configure" OR moduleName = "Experiment" OR moduleName:CONTAINS("Configure") OR moduleName:CONTAINS("Experiment") {
         dumpFile("    TARGETED MODULE PROBE: " + moduleName).
         LOCAL probeNames IS LIST(
@@ -134,13 +141,18 @@ DECLARE FUNCTION dumpModuleDetails {
     }.
 }.
 
+// --------------------------------------------------------------
+
+// SHIP SUMMARY
 dumpLine("PART DUMP  ship: " + SHIP:NAME).
 dumpLine("Total parts: " + SHIP:PARTS:LENGTH).
 dumpLine("Duplicate-safe module scan: GETMODULEBYINDEX used for repeated module names like Experiment.").
 dumpLine("AG1/AG2/AG3 are vessel-level bindings; KOS exposes the parts in the group, not a direct group-to-action list.").
 dumpLine("Full detail -> " + outFile).
+// --------------------------------------------------------------
 dumpFile("==================================================================").
 
+// SENSOR LIST
 dumpFile("LIST SENSORS").
 LIST SENSORS IN sensorList.
 IF sensorList:LENGTH = 0 {
@@ -151,8 +163,10 @@ IF sensorList:LENGTH = 0 {
     }
 }.
 
+// --------------------------------------------------------------
 dumpFile("==================================================================").
 
+// SCIENCE MODULES
 dumpFile("SCIENCE MODULES ON THIS VESSEL").
 FOR part IN SHIP:PARTS {
     LOCAL moduleNames IS part:MODULES.
@@ -171,8 +185,10 @@ FOR part IN SHIP:PARTS {
     }
 }.
 
+// --------------------------------------------------------------
 dumpFile("==================================================================").
 
+// ACTION GROUPS
 dumpFile("ACTION GROUP MEMBERSHIP SUMMARY").
 FOR groupName IN LIST("AG1", "AG2", "AG3") {
     LOCAL groupParts IS SHIP:PARTSINGROUP(groupName).
@@ -193,7 +209,10 @@ FOR groupName IN LIST("AG1", "AG2", "AG3") {
     dumpFile("").
 }.
 
+// --------------------------------------------------------------
 dumpFile("==================================================================").
+
+// FULL PART LIST
 dumpFile("FULL PART LIST").
 
 FOR part IN SHIP:PARTS {
@@ -320,7 +339,11 @@ FOR part IN SHIP:PARTS {
     }
 }.
 
+// --------------------------------------------------------------
 dumpFile("==================================================================").
+
+// BRUTE FORCE ACTION / EVENT TEST
+// Actually fires the actions and events
 dumpFile("BRUTE FORCE ACTION / EVENT TEST").
 FOR part IN SHIP:PARTS {
     LOCAL moduleNames IS part:MODULES.
@@ -354,5 +377,6 @@ FOR part IN SHIP:PARTS {
     }
 }
 
+// --------------------------------------------------------------
 dumpFile("==================================================================").
 dumpLine("Dump complete. Open " + outFile + " for the full action/event list.").

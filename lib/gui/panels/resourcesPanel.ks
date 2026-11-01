@@ -1,7 +1,8 @@
-// RESOURCES PANEL
-// Ship-wide resource overview for any vessel; reusable across ships. See docs/lib/gui/panels/resourcesPanel.md.
+// EXPLAINATION
+// Ship wide resource rows
 // --------------------------------------------------------------
 
+// Resources panel, payloads split out
 DECLARE FUNCTION buildResourcesPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

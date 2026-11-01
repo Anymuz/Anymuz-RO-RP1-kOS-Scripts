@@ -1,24 +1,18 @@
-// GUI DASHBOARD
-// Generic fallback dashboard for the sandbox and quick tests. See docs/lib/gui/.
+// EXPLAINATION
+// Fallback dashboard for the sandbox and quick tests
 // --------------------------------------------------------------
 
 // LAYOUT
-// The whole dashboard described as data: one row per tab, each
-//   LIST("TAB NAME", builder1@, builder2@, ...). Empty by default: a family (or
-// the sandbox) fills it with guiResetLayout()/guiAddTab(), loading only the panels
-// that vehicle shows. guiUseStandardLayout() populates the full shared set for the
-// generic fallback.
+// One row per tab: LIST("TAB NAME", builder1@, ...)
 GLOBAL guiLayout IS LIST().
 
 // LAYOUT COMPOSITION
-// Make the dashboard ship/series specific: call guiResetLayout() then guiAddTab()
-// for each system the vehicle actually carries, before startDashboard. A program
-// (family) or ship script does this after the GUI is loaded.
+// Clears the layout
 DECLARE FUNCTION guiResetLayout {
     SET guiLayout TO LIST().
 }.
 
-// Append one tab: a name plus a LIST of panel-builder delegates that stack on it.
+// Adds a tab with its panel builders
 DECLARE FUNCTION guiAddTab {
     DECLARE PARAMETER tabName.
     DECLARE PARAMETER builders.
@@ -30,9 +24,7 @@ DECLARE FUNCTION guiAddTab {
     guiLayout:ADD(row).
 }.
 
-// Populate guiLayout with the full shared-panel dashboard. Opt-in and heavier: it
-// loads every reusable panel, so only the generic fallback and quick tests use it.
-// Purpose-built families instead load and list just the panels they carry.
+// Loads every shared panel as the layout
 DECLARE FUNCTION guiUseStandardLayout {
     RUNONCEPATH("0:/lib/gui/guiPanels.ks").
     guiResetLayout().
@@ -44,13 +36,12 @@ DECLARE FUNCTION guiUseStandardLayout {
     guiAddTab("SYSTEMS",  LIST(buildSystemsPanel@, buildAutomationPanel@, buildControlsPanel@, buildAudioPanel@)).
 }.
 
-// Build the tabbed window from guiLayout. Each builder is called with its tab's
-// content box; panels sharing a tab are separated by a small spacer.
+// Builds the tabbed window from the layout
 DECLARE FUNCTION buildDashboard {
     DECLARE PARAMETER windowTitle IS "MISSION CONTROL".
     DECLARE PARAMETER width IS guiConfig["width"].
 
-    IF guiLayout:LENGTH = 0 { guiUseStandardLayout(). }. // fallback: full shared dashboard
+    IF guiLayout:LENGTH = 0 { guiUseStandardLayout(). }.
 
     createGuiWindow(windowTitle, width).
 
@@ -75,7 +66,7 @@ DECLARE FUNCTION buildDashboard {
 // --------------------------------------------------------------
 
 // LIFECYCLE
-// Build, show, do a first refresh, and arm the timed refresh trigger.
+// Builds, shows and starts refreshing
 DECLARE FUNCTION startDashboard {
     DECLARE PARAMETER windowTitle IS "MISSION CONTROL".
     DECLARE PARAMETER refreshInterval IS guiConfig["refreshInterval"].
@@ -89,7 +80,7 @@ DECLARE FUNCTION startDashboard {
     RETURN guiState["window"].
 }.
 
-// Stop refreshing, hide, and destroy the dashboard window.
+// Stops refreshing and destroys the window
 DECLARE FUNCTION stopDashboard {
     disarmGuiRefresh().
     disposeGui().

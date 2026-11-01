@@ -1,7 +1,8 @@
-// SYSTEMS PANEL
-// Systems health: power + alarm state (read-only). See docs/lib/gui/panels/systemsPanel.md.
+// EXPLAINATION
+// Battery charge and alarm state
 // --------------------------------------------------------------
 
+// Systems panel
 DECLARE FUNCTION buildSystemsPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
 

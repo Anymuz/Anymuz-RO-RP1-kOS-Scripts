@@ -1,28 +1,30 @@
+// EXPLAINATION
+// Entry point, sets up globals and libraries.
+// --------------------------------------------------------------
+
+// SHIP NAME
 // WAIT UNTIL SHIP:UNPACKED.
 // WAIT 2.
 RUNONCEPATH("0:/lib/logging.ks").
 logBreaker("Starting New Session").
 
-// Stores the ship name and splits it if follows the convention "Series-Variant".
-GLOBAL shipName IS SHIP:NAME. // Set this to the name of the ship, used for logging and telemetry messages.
+// Series and variant from the name
+GLOBAL shipName IS SHIP:NAME. // Used in logging and telemetry
 LOCAL shipNameParts IS shipName:SPLIT("-").
 GLOBAL shipSeries IS shipNameParts[0].
 
-// Determine the shipvariant (if any)
+// Variant, if any
 IF shipNameParts:LENGTH > 1 {
     GLOBAL shipVariant IS shipNameParts[1].
 } ELSE {
     GLOBAL shipVariant IS "N/A".
 }.
+// --------------------------------------------------------------
 
+// GLOBAL STATE
 //logMessage(message, messageType, consoleTimestamp, playSound, outputToConsole).
-// message            Text to log/output.
-// messageType        Type shown in [ ], automatically uppercased.
-// consoleTimestamp   TRUE = show timestamp in console. FALSE = no console timestamp.
-// playSound          TRUE = play short alert sound if messageType supports it.
-// outputToConsole    TRUE = print to terminal. FALSE = log file only.
 
-// INITIALISE GLOBAL STATE - Each ship script must have these for other functions to work properly.
+// Each ship script needs these
 GLOBAL flightData IS LEXICON().
 SET flightData["maxVelocity"] TO 0.
 SET flightData["maxVelocityAlt"] TO 0.
@@ -32,19 +34,22 @@ SET flightData["descentCaptured"] TO FALSE.
 SET flightData["phase"] TO "prelaunch".
 SET flightData["maxApoapsis"] TO 0.
 SET flightData["maxApoapsisAlt"] TO 0.
-SET flightData["launchGeo"] TO SHIP:GEOPOSITION. // Launch site captured on the pad for downrange tracking.
+SET flightData["launchGeo"] TO SHIP:GEOPOSITION. // Launch site
 logMessage("Global state initialized.", "system", TRUE, FALSE, TRUE).
+// --------------------------------------------------------------
 
-// Import utils first to ensure helper functions are fully available.
+// LIBRARIES
+// Utils first
 RUNONCEPATH("0:/lib/utils.ks").
 RUNONCEPATH("0:/lib/resources.ks").
 RUNONCEPATH("0:/lib/parts.ks").
 logMessage("Core function libraries loaded.", "system", TRUE, FALSE, TRUE).
 
-// Makes audio available for the ship 
-// remember to call setupAudio() in the main ship script to initialize the audio system.
+// Audio, call setupAudio() in the ship script
 RUNONCEPATH("0:/lib/audio.ks")..
 logMessage("Core audio libraries loaded.", "system", TRUE, FALSE, TRUE).
+// --------------------------------------------------------------
 
-// Loads the ship specific script.
+// SHIP SCRIPT
 RUNPATH("0:/system/loadShip.ks"). 
+// --------------------------------------------------------------

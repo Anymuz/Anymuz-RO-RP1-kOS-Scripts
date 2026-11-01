@@ -1,7 +1,8 @@
-// RECOVERY PANEL
-// Recovery status + ARM-guarded manual actions. See docs/lib/gui/panels/recoveryPanel.md.
+// EXPLAINATION
+// Recovery readouts and armed manual actions
 // --------------------------------------------------------------
 
+// Recovery panel
 DECLARE FUNCTION buildRecoveryPanel {
     DECLARE PARAMETER parentBox IS guiState["window"].
     DECLARE PARAMETER allowManualDestruct IS guiConfig["manualDestruct"].
@@ -25,11 +26,7 @@ DECLARE FUNCTION buildRecoveryPanel {
         setWidgetText("recVspd", ROUND(SHIP:VERTICALSPEED, 1) + " m/s").
     }).
 
-    // Manual actions - each needs ARM ticked first, then auto-disarms. Each shows
-    // only when relevant: the chute jettison on craft carrying a "CHUTE-CASE" part,
-    // and SELF DESTRUCT whenever the pilot can command a destruct at all
-    // (guiConfig["manualDestruct"], which a ship/family sets - default TRUE). This is
-    // independent of any automatic altitude destruct on the AUTOMATION tab.
+    // Manual actions, tick ARM first
     guiAddHeading(panel, "MANUAL (ARM FIRST)").
     IF SHIP:PARTSTAGGED("CHUTE-CASE"):LENGTH > 0 {
         guiAddArmedAction(panel, "Jettison Chute Fairing", { jettisonChuteFairing(). }).

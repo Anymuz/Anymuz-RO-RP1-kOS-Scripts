@@ -1,6 +1,11 @@
+// EXPLAINATION
+// Finds and runs the script for this vessel.
+// --------------------------------------------------------------
+
+// SHIP SCRIPT LOOKUP
 setupAudio().
 logMessage("Attempting boot: " + SHIP:NAME + ".", "system", TRUE, FALSE, TRUE).
-// Determine series from name with "-" as separator, if no separator assume not part of series and set series to vessel name.
+// Series from name, split on "-"
 LOCAL fullVesselName IS SHIP:NAME.
 LOCAL series is FALSE.
 
@@ -14,7 +19,9 @@ IF NOT series {
 } ELSE {
     SET shipFile TO "0:/ships/" + series:TOLOWER() + "/" + fullVesselName + ".ks".
 }.
+// --------------------------------------------------------------
 
+// BOOT
 logMessage("Booting from: " + shipFile + ".", "system", TRUE, FALSE, TRUE).
 
 IF EXISTS(shipFile) {
@@ -28,3 +35,4 @@ IF EXISTS(shipFile) {
     PRINT "[LOADING EXIT INFORMATION WITH INSTRUCTIONS]".
     RUNPATH("0:/system/failureInfo.ks").
 }.
+// --------------------------------------------------------------

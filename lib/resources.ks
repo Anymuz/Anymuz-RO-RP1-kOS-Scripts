@@ -1,14 +1,12 @@
-// RESOURCES
-// * Unified resource reads for the whole ship or a tagged subset of parts.
-// * partTag "" (default) = whole ship; resourceName "" (default) = every resource in scope.
+// EXPLAINATION
+// Resource reads for whole ship or tagged parts, "" = all.
 // --------------------------------------------------------------
 
-// Resources named here are skipped by aggregate (resourceName "") reads - e.g. a non-consumed
-// payload sharing a tank with propellant would otherwise skew that tank's fill percentage.
-// A resource requested by its own name is never affected by this list.
+// RESOURCE READS
+// Skipped by whole-tank reads
 GLOBAL payloadResourceNames IS LIST().
 
-// Pure percentage from two magnitudes; carries no resource semantics.
+// Percent from two values
 DECLARE FUNCTION getPercent {
     DECLARE PARAMETER currentAmount.
     DECLARE PARAMETER totalAmount.
@@ -20,7 +18,7 @@ DECLARE FUNCTION getPercent {
     RETURN ROUND((currentAmount / totalAmount) * 100, 1).
 }.
 
-// Distinct resource names in scope.
+// Resource names on ship or tag
 DECLARE FUNCTION getResourceNames {
     DECLARE PARAMETER partTag IS "".
 
@@ -44,7 +42,7 @@ DECLARE FUNCTION getResourceNames {
     RETURN names.
 }.
 
-// Current amount in scope; empty resourceName sums every resource in scope (skipping payloadResourceNames).
+// Current amount of a resource
 DECLARE FUNCTION getResourceAmount {
     DECLARE PARAMETER resourceName IS "".
     DECLARE PARAMETER partTag IS "".
@@ -54,7 +52,7 @@ DECLARE FUNCTION getResourceAmount {
     IF partTag = "" {
         FOR res IN SHIP:RESOURCES {
             IF resourceName = "" AND payloadResourceNames:CONTAINS(res:NAME) {
-                // Skip: non-consumed payload, would skew a whole-ship aggregate.
+                // Skip payload
             } ELSE IF resourceName = "" OR res:NAME = resourceName {
                 SET total TO total + res:AMOUNT.
             }.
@@ -65,7 +63,7 @@ DECLARE FUNCTION getResourceAmount {
     FOR part IN SHIP:PARTSTAGGED(partTag) {
         FOR res IN part:RESOURCES {
             IF resourceName = "" AND payloadResourceNames:CONTAINS(res:NAME) {
-                // Skip: non-consumed payload, would skew a tagged-tank aggregate.
+                // Skip payload
             } ELSE IF resourceName = "" OR res:NAME = resourceName {
                 SET total TO total + res:AMOUNT.
             }.
@@ -75,7 +73,7 @@ DECLARE FUNCTION getResourceAmount {
     RETURN total.
 }.
 
-// Capacity in scope; empty resourceName sums every resource in scope (skipping payloadResourceNames).
+// Capacity of a resource
 DECLARE FUNCTION getResourceCapacity {
     DECLARE PARAMETER resourceName IS "".
     DECLARE PARAMETER partTag IS "".
@@ -85,7 +83,7 @@ DECLARE FUNCTION getResourceCapacity {
     IF partTag = "" {
         FOR res IN SHIP:RESOURCES {
             IF resourceName = "" AND payloadResourceNames:CONTAINS(res:NAME) {
-                // Skip: non-consumed payload, would skew a whole-ship aggregate.
+                // Skip payload
             } ELSE IF resourceName = "" OR res:NAME = resourceName {
                 SET total TO total + res:CAPACITY.
             }.
@@ -96,7 +94,7 @@ DECLARE FUNCTION getResourceCapacity {
     FOR part IN SHIP:PARTSTAGGED(partTag) {
         FOR res IN part:RESOURCES {
             IF resourceName = "" AND payloadResourceNames:CONTAINS(res:NAME) {
-                // Skip: non-consumed payload, would skew a tagged-tank aggregate.
+                // Skip payload
             } ELSE IF resourceName = "" OR res:NAME = resourceName {
                 SET total TO total + res:CAPACITY.
             }.
@@ -106,7 +104,7 @@ DECLARE FUNCTION getResourceCapacity {
     RETURN total.
 }.
 
-// Fill percentage in scope; empty resourceName gives a whole-tank fill across all resources.
+// Percent full of a resource
 DECLARE FUNCTION getResourcePercent {
     DECLARE PARAMETER resourceName IS "".
     DECLARE PARAMETER partTag IS "".
@@ -114,7 +112,7 @@ DECLARE FUNCTION getResourcePercent {
     RETURN getPercent(getResourceAmount(resourceName, partTag), getResourceCapacity(resourceName, partTag)).
 }.
 
-// Snapshot of every resource in scope as name -> LEXICON(amount, capacity, percent).
+// Amount, capacity and percent per resource
 DECLARE FUNCTION getResourceSummary {
     DECLARE PARAMETER partTag IS "".
 
@@ -131,10 +129,11 @@ DECLARE FUNCTION getResourceSummary {
     RETURN summary.
 }.
 
-// Amount of one resource across tagged parts; retained for existing callers.
+// Old name for getResourceAmount
 DECLARE FUNCTION sumPartResource {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER resourceName.
 
     RETURN getResourceAmount(resourceName, partTag).
 }.
+// --------------------------------------------------------------
