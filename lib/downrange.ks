@@ -112,7 +112,7 @@ DECLARE FUNCTION logDownrangeProfile {
     logMessage("Prograde hold after guidance: " + lockProgradeAfterGuidance + ".", "guidance", TRUE, FALSE, TRUE).
 }.
 
-//` Arms the downrange guidance profile, applying calculated pitch targets and logging progress.
+// Arm downrange guidance and log progress.
 DECLARE FUNCTION armDownrangeGuidance {
     DECLARE PARAMETER launchAzimuth IS 90.
     DECLARE PARAMETER turnStartAlt IS 0.

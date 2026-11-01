@@ -23,9 +23,7 @@ DECLARE FUNCTION armBoosterSeperation {
     LOCAL totalBoosters IS SHIP:PARTSTAGGED(boosterTag):LENGTH.
     LOCAL boosterSeparationLevel IS boosterShutdownFuel * 1.5. // 1.5x shutdown to prevent dry separation instability.
 
-    // Respect the phase set by the launch function:
-    // "main"  -> launchShip already lit main engine + boosters together; skip Trigger A (main ignition).
-    // else   -> sequential booster-then-main flow; Trigger A will light the main engine.
+    // Simultaneous ignition sets phase to "main"; otherwise ignite the main engine here.
     IF flightData["phase"] <> "main" {
         SET flightData["phase"] TO "booster".
     }.
@@ -45,14 +43,14 @@ DECLARE FUNCTION armBoosterSeperation {
     WHEN TRUE THEN {
         LOCAL boosterFuel IS sumPartResource(boosterTag, boosterFuelName).
          // Main engine ignition and booster separation sequence.
-        // Trigger A: light the main engine just before booster burnout (sequential flow only).
+        // Ignite the main engine just before booster burnout in sequential mode.
         IF flightData["phase"] = "booster" AND boosterFuel <= preigniteMainFuel  {
            SET flightData["phase"] TO "main".
             logMessage("Main engine ignition.", "alert", TRUE, FALSE, TRUE).
             STAGE.
         }.
 
-        // Trigger B: drop spent boosters once fuel is below the safe-separation threshold.
+        // Separate boosters below the safe fuel threshold.
         IF flightData["phase"] = "main" AND boosterFuel <= boosterSeparationLevel {
             logMessage("Booster separation.", "alert", TRUE, FALSE, TRUE).
             //WAIT UNTIL STAGE:READY.

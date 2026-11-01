@@ -3,13 +3,10 @@
 // --------------------------------------------------------------
 
 // REGISTRY
-// Each entry: LEXICON("name", <string>, "action", <delegate>, "armed", <bool>, "manual", <bool>).
+// Each entry stores a name, action delegate, armed state, and manual flag.
 GLOBAL guiSystems IS LIST().
 
-// Register an armable system. `action` is a no-argument delegate that performs the
-// arming (it should capture the ship's parameters). `manual` starts it in manual
-// mode (automatic action held) if TRUE - this is the only way to set manual mode;
-// there is no live pilot toggle for it.
+// Register an arming delegate. MANUAL systems stay armed but do not fire automatically.
 DECLARE FUNCTION registerSystem {
     DECLARE PARAMETER name.
     DECLARE PARAMETER action.
@@ -42,10 +39,7 @@ DECLARE FUNCTION armSystem {
     }.
 }.
 
-// Arm every registered system (set up its automatic logic). Systems registered as
-// MANUAL are still armed, but their automatic action checks systemManual() and
-// holds instead of firing. The ship script calls this at post-launch where it
-// used to arm systems directly.
+// Arm every registered system. MANUAL systems defer firing to their action logic.
 DECLARE FUNCTION autoArmSystems {
     FOR sys IN guiSystems {
         IF NOT sys["armed"] {
@@ -54,9 +48,7 @@ DECLARE FUNCTION autoArmSystems {
     }.
 }.
 
-// TRUE if the named system is registered and the pilot has it in MANUAL. Autonomous
-// code (e.g. the auto-destruct in lib/detonation.ks) checks this before firing.
-// Unknown systems return FALSE, so anything not registered stays fully automatic.
+// TRUE if the named system is registered in MANUAL mode.
 DECLARE FUNCTION systemManual {
     DECLARE PARAMETER name.
 
@@ -66,4 +58,3 @@ DECLARE FUNCTION systemManual {
     }.
     RETURN FALSE.
 }.
-

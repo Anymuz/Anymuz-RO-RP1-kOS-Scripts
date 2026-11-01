@@ -1,4 +1,4 @@
-# Ignore AI tooling and editor scaffolding from the published repo.
+# Ignore editor scaffolding from the published repo.
 .github/
 **/.instructions.md
 .vscode/
@@ -10,6 +10,9 @@ logs/*
 # Personal-only artefacts (legacy scripts, override files, snapshots).
 # Gitignored on both branches so local copies never get committed.
 personal/
+
+# Folder for perosonal notes and ideas, too much clutter to keep in the repo.
+_notes/
 
 # Branch-specific artefacts (legacy scripts, override files, snapshots).
 # Gitignored on both branches so local copies never get committed.

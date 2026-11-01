@@ -19,11 +19,7 @@ SET guiConfig["engineTag"] TO "U-1250". // Part tag the engine panel reads (set 
 SET guiConfig["manualDestruct"] TO TRUE. // Show the RECOVERY SELF DESTRUCT button. A ship/family sets this (default TRUE - assume the pilot can always command a destruct).
 // --------------------------------------------------------------
 
-// EDITABLE MISSION PARAMETERS
-// A shared bag of tunables. Populate it from your ship script (after loading the
-// GUI), then bind an editable field to a key with guiAddParamField on the panel
-// that manages that system, and read guiParams["..."] where needed. There is no
-// generic PARAMS tab - editable inputs live on their own system's panel.
+// Shared mission parameters for editable GUI fields.
 GLOBAL guiParams IS LEXICON().
 // --------------------------------------------------------------
 

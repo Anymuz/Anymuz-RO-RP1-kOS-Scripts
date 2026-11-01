@@ -1,6 +1,6 @@
 setupAudio().
 logMessage("Attempting boot: " + SHIP:NAME + ".", "system", TRUE, FALSE, TRUE).
-// Determine series from name with "-" as separator, if no separator assume not part of series and set series to vessel name.
+// Resolve family and vessel script from the vessel name.
 LOCAL fullVesselName IS SHIP:NAME.
 LOCAL series is FALSE.
 

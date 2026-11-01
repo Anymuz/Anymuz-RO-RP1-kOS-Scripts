@@ -1,5 +1,5 @@
 // RESOURCES PANEL
-// Ship-wide resource overview for any vessel; reusable across ships. See docs/lib/gui/panels/resourcesPanel.md.
+// Ship-wide resource overview.
 RUNONCEPATH("0:/lib/resources.ks").
 // --------------------------------------------------------------
 

@@ -1,10 +1,6 @@
 // PARTS
-// * Activate parts directly by kOS tag through their own module actions/events,
-//   so behaviour no longer depends on staging order.
-// * Every call is guarded: it only acts when the tagged part exists AND actually
-//   exposes the requested action/event - it can never trigger something the part
-//   doesn't advertise.
-// * Run boot/partDump.ks to discover the exact action/event names to pass here.
+// Trigger actions/events on tagged parts, after checking they are available.
+// Use boot/partDump.ks to find action and event names.
 // --------------------------------------------------------------
 
 // TRUE if any part carries this tag.
@@ -121,10 +117,7 @@ DECLARE FUNCTION doTaggedEvent {
     RETURN done.
 }.
 
-// Find every part tagged partTag that exposes actionName and return its
-// PartModule (not yet fired). Pairs with igniteResolvedModules so a caller can
-// resolve everything ahead of time, then fire with nothing else in between -
-// see igniteResolvedModules for why that matters for multi-part ignition.
+// Resolve action modules before firing so scanning cannot delay multi-part ignition.
 DECLARE FUNCTION resolveTaggedActionModules {
     DECLARE PARAMETER partTag.
     DECLARE PARAMETER actionName.
@@ -142,14 +135,7 @@ DECLARE FUNCTION resolveTaggedActionModules {
     RETURN found.
 }.
 
-// Fire actionName on every already-resolved module (from resolveTaggedActionModules)
-// back-to-back, with the instruction budget raised so the whole batch can't be
-// split across physics ticks by kOS's IPU limit - the straggler that causes an
-// unstable symmetric cluster (e.g. one of four boosters lighting a beat late)
-// comes from per-part module scanning eating into that per-tick budget, not
-// from anything KSP itself does. Resolving modules ahead of time and firing
-// them here, with IPU raised, keeps the actual DOACTION calls as close to
-// simultaneous as kOS can make them.
+// Fire resolved actions in one tick by raising kOS's instruction budget.
 DECLARE FUNCTION igniteResolvedModules {
     DECLARE PARAMETER modules.
     DECLARE PARAMETER actionName.
@@ -165,4 +151,3 @@ DECLARE FUNCTION igniteResolvedModules {
     SET CONFIG:IPU TO previousIPU.
     RETURN modules:LENGTH.
 }.
-

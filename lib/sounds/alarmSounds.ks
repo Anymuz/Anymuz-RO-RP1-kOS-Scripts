@@ -1,5 +1,4 @@
-// EXPLAINATION:
-// * This library defines alarm sounds for various critical events, such as impending detonation or system failures. These sounds are intended to play until manually stopped.
+// Alarm tone definitions.
 // --------------------------------------------------------------
 
 // ALARM TONES:
