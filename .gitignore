@@ -10,6 +10,7 @@ logs/*
 # Personal-only artefacts (legacy scripts, override files, snapshots).
 # Gitignored on both branches so local copies never get committed.
 personal/
+_notes/
 
 # Branch-specific artefacts (legacy scripts, override files, snapshots).
 # Gitignored on both branches so local copies never get committed.
